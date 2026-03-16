@@ -1,6 +1,6 @@
 # Scout Signal — Deployment Checklist
 
-Use this checklist for Phase 11 (Deploy and Seed Real Data). For **local development** and fixing the "Could not find the table 'public.users'" error, see [SETUP.md](./SETUP.md).
+Use this checklist for Phase 11 (Deploy and Seed Real Data). For **local development** and fixing the "Could not find the table 'public.users'" error, see [SETUP.md](./SETUP.md). For **CloudFront 403** on production (forms/login failing) and DNS runbooks, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md).
 
 ## 1. Deploy web app (Vercel)
 

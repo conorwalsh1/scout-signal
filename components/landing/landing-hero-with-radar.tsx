@@ -16,7 +16,7 @@ export function LandingHeroWithRadar({
   return (
     <>
       <CursorTrail />
-      <section className="relative border-b border-border/50 px-4 py-16 sm:px-6 lg:px-8">
+      <section className="relative border-b border-border/50 px-4 py-16 sm:px-6 lg:px-8" data-landing="hero-with-radar">
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col items-center gap-12 lg:flex-row lg:justify-between lg:gap-16">
             <div className="flex shrink-0 justify-center lg:order-2">

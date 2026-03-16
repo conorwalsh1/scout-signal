@@ -4,16 +4,20 @@ import {
   getSignalsTodayCount,
   getLatestSignalCompanies,
   getTopScoreCompanies,
+  getRadarSignalLabels,
 } from "@/lib/landing-data";
+import { LandingHeroWithRadar } from "@/components/landing/landing-hero-with-radar";
+import { BADGES } from "@/lib/badges";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [companiesCount, signalsToday, latestCompanies, topScoreCompanies] = await Promise.all([
+  const [companiesCount, signalsToday, latestCompanies, topScoreCompanies, radarLabels] = await Promise.all([
     getLandingCompaniesCount(),
     getSignalsTodayCount(),
     getLatestSignalCompanies(3),
     getTopScoreCompanies(5),
+    getRadarSignalLabels(6),
   ]);
 
   const displayCount = companiesCount > 0 ? companiesCount.toLocaleString() : "1,036";
@@ -43,38 +47,11 @@ export default async function HomePage() {
         </div>
       </header>
 
-      <section className="border-b border-border/50 px-4 py-20 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-5xl text-center">
-          <p className="text-sm font-medium uppercase tracking-[0.22em] text-signal-green">
-            Hiring intelligence for early growth
-          </p>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground-heading sm:text-5xl lg:text-6xl">
-            Discover companies before they start scaling.
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-secondary">
-            Real-time hiring intelligence that reveals which companies are about to grow.
-          </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Tracking <span className="font-semibold text-signal-green">{displayCount}</span> companies.
-            {" · "}
-            Signals detected today <span className="font-semibold text-signal-green">{signalsDisplay}</span>
-          </p>
-          <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-            <Link
-              href="/signup"
-              className="inline-flex justify-center rounded-lg bg-signal-green px-6 py-3.5 text-base font-semibold text-black no-underline hover:bg-signal-green/90"
-            >
-              Create free account
-            </Link>
-            <Link
-              href="/login"
-              className="inline-flex justify-center rounded-lg border border-border px-6 py-3.5 text-base font-semibold text-foreground no-underline hover:bg-card"
-            >
-              View live signals
-            </Link>
-          </div>
-        </div>
-      </section>
+      <LandingHeroWithRadar
+        radarLabels={radarLabels}
+        displayCount={displayCount}
+        signalsDisplay={signalsDisplay}
+      />
 
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
@@ -90,6 +67,25 @@ export default async function HomePage() {
             title="Act"
             body="Use the leaderboard and company intelligence pages to prioritise outreach and market research."
           />
+        </div>
+      </section>
+
+      <section className="border-t border-border/50 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-2xl font-bold text-foreground-heading">Signals we detect</h2>
+          <p className="mt-2 text-sm text-secondary">
+            Hiring spikes, AI hiring, engineering buildout, funding, and leadership signals.
+          </p>
+          <div className="mt-6 flex flex-wrap gap-2">
+            {BADGES.map((badge) => (
+              <span
+                key={badge.id}
+                className="inline-flex items-center rounded-md border border-border bg-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-foreground"
+              >
+                {badge.label}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 

@@ -6,7 +6,7 @@ import { CompanyBadge } from "@/components/company-badge";
 
 export function LandingBadges() {
   return (
-    <section className="border-t border-border/50 px-4 py-16 sm:px-6 lg:px-8">
+    <section className="border-t border-border/50 px-4 py-16 sm:px-6 lg:px-8" data-landing="signals-we-detect">
       <div className="mx-auto max-w-6xl">
         <h2 className="text-2xl font-bold text-foreground-heading">Signals we detect</h2>
         <p className="mt-2 text-sm text-secondary">
