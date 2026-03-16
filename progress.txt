@@ -1,0 +1,49 @@
+progress.txt
+Last Updated
+2026-03-16
+Current Phase
+Phase 12 — First User Validation plus FT1000 data quality and web enrichment.
+Completed Phases
+Phase 0 — Project Setup
+Phase 1 — Database Foundation
+Phase 2 — Authentication and App Shell
+Phase 3 — Source Connector Framework
+Phase 4 — Event Ingestion Pipeline
+Phase 5 — Signal Engine
+Phase 6 — Company Score Engine
+Phase 7 — Dashboard MVP
+Phase 8 — Company Detail and Saved Targets
+Phase 9 — Billing and Plan Gating
+Phase 10 — Reliability Pass
+Phase 11 — Deploy and Seed Real Data
+What Was Just Built
+- FT1000 import pipeline and `company_sources` source tracking.
+- `company_web_sources` provenance model for website/domain confidence and verification.
+- Manual verified website enrichment workflow, plus resumable enrichment checkpointing.
+- Leaderboard rank tracking in `company_scores` with rank and previous rank support.
+- Company detail page now shows website source/confidence when available.
+What Works Right Now
+- Seed, deploy checklist, FT1000 import, admin see-all + delete, landing company count.
+- Dashboard, companies list, company detail, saved, account, pricing, auth.
+- Scheduled pipeline via `/api/cron/ingest` (Vercel Cron or manual curl).
+- Leaderboard-style company ranking by score with rank position data stored in `company_scores`.
+- Website/domain provenance stored in `company_web_sources` and shown on company detail pages.
+- Manual website enrichment is working safely for verified companies.
+What Is Broken or Incomplete
+- Company website/domain coverage is still incomplete across the FT1000 import set.
+- Automated enrichment is partially blocked by external search-provider limits and `403` responses, so current progress relies on manual verified batches for the highest-value missing companies.
+- `progress.txt` had fallen behind and should be kept current as data quality work continues.
+Current Blockers
+- Scalable, low-cost website enrichment for the remaining unresolved companies.
+Decisions Made
+- Prefer verified official websites over broad automated guessing.
+- Store provenance and confidence for company web data instead of mutating `companies` without traceability.
+- Clean the first FT1000 cohort carefully so future scaling can follow a repeatable formula.
+Next Task
+- Continue manual verified website enrichment for the highest-value missing FT1000 companies.
+- Use the cleaned FT1000 cohort to strengthen job-post, funding, and leadership-hire signal quality.
+- Run through `docs/VALIDATION.md`: show to 3–5 recruiters, capture feedback on signal trust and score clarity, improve before adding features, aim for first paying stranger.
+Notes for Cursor
+- V1 build (Phases 0–11) is code-complete. Phase 12 is now a mix of user validation and data-quality hardening.
+- Current live DB status: `1036` total companies, `297` with both `website` and `domain`, `739` still missing one or both, `297` `company_web_sources` rows.
+- Website enrichment progress is more trustworthy than before because accepted matches are now tracked with provenance.

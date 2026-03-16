@@ -1,0 +1,19 @@
+.DS_Store
+node_modules
+.next
+.vercel
+
+# env files (secrets)
+.env
+.env.*
+!.env.example
+!.env.local.example
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# build artifacts
+tsconfig.tsbuildinfo

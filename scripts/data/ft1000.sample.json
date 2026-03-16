@@ -1,0 +1,5 @@
+[
+  { "name": "Company One", "domain": "companyone.com", "website": "https://companyone.com", "rank": 1 },
+  { "name": "Company Two", "domain": "companytwo.com", "website": "https://companytwo.com", "rank": 2 },
+  { "name": "Company Three", "domain": "companythree.com", "website": "https://companythree.com", "rank": 3 }
+]
