@@ -33,7 +33,7 @@ export default async function DashboardPage() {
   ]);
   const displayCount = companiesCount != null ? companiesCount.toLocaleString() : "—";
   const anyHiringSignals = feed.some((c) => hasHiringSignals(c.score_components_json ?? {}));
-  const feedLimitReached = plan === "basic" && feed.length >= 20;
+  const feedLimitReached = plan !== "pro" && feed.length >= 20;
 
   return (
     <div className="space-y-4">
@@ -77,7 +77,7 @@ export default async function DashboardPage() {
           </p>
         </div>
       )}
-      {plan === "basic" && feedLimitReached && (
+      {plan !== "pro" && feedLimitReached && (
         <div
           className="mb-4 rounded-lg border p-4 flex items-center justify-between gap-4"
           style={{
@@ -86,14 +86,14 @@ export default async function DashboardPage() {
           }}
         >
           <p className="text-sm text-[#FDE68A]">
-            You&apos;re viewing the first 20 companies. Upgrade to Pro for the full feed.
+            You&apos;re viewing a limited feed. {plan === "free" ? "Choose a paid plan" : "Upgrade to Pro"} for broader access.
           </p>
           <Link href="/pricing">
             <Button
               size="sm"
               className="bg-amber-accent text-sidebar font-medium hover:opacity-90"
             >
-              Upgrade to Pro
+              {plan === "free" ? "View plans" : "Upgrade to Pro"}
             </Button>
           </Link>
         </div>

@@ -3,7 +3,7 @@
  * Schema authority: docs/BACKEND_STRUCTURE.md
  */
 
-export type Plan = "basic" | "pro";
+export type Plan = "free" | "basic" | "pro";
 
 export interface Company {
   id: string;

@@ -10,7 +10,7 @@ import type { ScoreComponents } from "@/types/database";
 interface CompaniesListProps {
   initialCompanies: CompaniesListItem[];
   savedIds: string[];
-  plan?: "basic" | "pro";
+  plan?: "free" | "basic" | "pro";
   hasSearchOrSort?: boolean;
   totalRankedCount?: number | null;
 }
@@ -18,7 +18,7 @@ interface CompaniesListProps {
 export function CompaniesList({
   initialCompanies,
   savedIds: initialSaved,
-  plan = "basic",
+  plan = "free",
   hasSearchOrSort = false,
   totalRankedCount = null,
 }: CompaniesListProps) {
@@ -48,13 +48,13 @@ export function CompaniesList({
   if (initialCompanies.length === 0) {
     return (
       <>
-        {plan === "basic" && saveLimitHit && (
+        {plan !== "pro" && saveLimitHit && (
           <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">
-            Save limit reached (10 on Basic).{" "}
+            Save limit reached ({plan === "free" ? "10 on Free" : "25 on Basic"}).{" "}
             <a href="/pricing" className="font-medium underline">
-              Upgrade to Pro
+              {plan === "free" ? "View plans" : "Upgrade to Pro"}
             </a>{" "}
-            for unlimited saved companies.
+            for more saved companies.
           </div>
         )}
         <EmptyState
@@ -71,13 +71,13 @@ export function CompaniesList({
 
   return (
     <>
-      {plan === "basic" && saveLimitHit && (
+      {plan !== "pro" && saveLimitHit && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/30 p-3 text-sm text-amber-800 dark:text-amber-200">
-          Save limit reached (10 on Basic).{" "}
+          Save limit reached ({plan === "free" ? "10 on Free" : "25 on Basic"}).{" "}
           <a href="/pricing" className="font-medium underline">
-            Upgrade to Pro
+            {plan === "free" ? "View plans" : "Upgrade to Pro"}
           </a>{" "}
-          for unlimited saved companies.
+          for more saved companies.
         </div>
       )}
       <ul className="space-y-5">

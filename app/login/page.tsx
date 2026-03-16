@@ -11,11 +11,12 @@ function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [resetLoading, setResetLoading] = useState(false);
   const searchParams = useSearchParams();
   const redirect = searchParams.get("redirect") ?? "/dashboard";
+  const resetSuccess = searchParams.get("reset") === "success";
+  const [message, setMessage] = useState<string | null>(resetSuccess ? "Password updated. You can log in with your new password now." : null);
+  const [loading, setLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +34,12 @@ function LoginForm() {
     });
     setLoading(false);
     if (err) {
-      setError(err.message ?? "Invalid credentials.");
+      const isInvalidCreds = err.message?.toLowerCase().includes("invalid login credentials");
+      setError(
+        isInvalidCreds
+          ? "Invalid login credentials. Wrong password? Use Forgot password below to set a new one."
+          : err.message ?? "Invalid credentials."
+      );
       return;
     }
     window.location.href = redirect;
@@ -55,7 +61,14 @@ function LoginForm() {
     setResetLoading(false);
 
     if (err) {
-      setError(err.message ?? "Could not send reset email.");
+      const isRateLimit =
+        err.message?.toLowerCase().includes("rate limit") ||
+        err.message?.toLowerCase().includes("email rate limit");
+      setError(
+        isRateLimit
+          ? "Too many reset emails sent. Please try again in an hour."
+          : err.message ?? "Could not send reset email."
+      );
       return;
     }
 

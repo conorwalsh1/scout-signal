@@ -1,11 +1,19 @@
 "use client";
 
+/**
+ * Password reset page. Users reach this via the link in the "Forgot password?" email.
+ * Supabase Dashboard → Authentication → URL Configuration → Redirect URLs must include:
+ *   https://yourdomain.com/reset-password  (and http://localhost:3000/reset-password for dev)
+ * Otherwise Supabase redirects to the Site URL (e.g. landing) and the user never sees this form.
+ */
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +31,7 @@ export default function ResetPasswordPage() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "PASSWORD_RECOVERY" || session) {
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN" || session) {
         setReady(true);
       }
     });
@@ -61,9 +69,7 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    setMessage("Password updated. You can log in with your new password now.");
-    setPassword("");
-    setConfirmPassword("");
+    router.replace("/login?reset=success");
   }
 
   return (

@@ -10,7 +10,9 @@ export async function ensureAppUser(
   email: string
 ): Promise<void> {
   const { error } = await supabase.from("users").upsert(
-    { id: authUserId, email, plan: "basic" },
+    // Let the database default choose the starting plan so production
+    // remains compatible whether the free-plan migration has run or not.
+    { id: authUserId, email },
     { onConflict: "id", ignoreDuplicates: true }
   );
   if (error) throw new Error(error.message ?? "Failed to ensure user record");

@@ -78,14 +78,15 @@ const ADMIN_FEED_LIMIT = 10_000;
 
 async function getUserPlan(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<Plan> {
   const { data } = await supabase.from("users").select("plan").eq("id", userId).single();
-  return (data?.plan === "pro" ? "pro" : "basic") as Plan;
+  if (data?.plan === "pro" || data?.plan === "basic" || data?.plan === "free") return data.plan as Plan;
+  return "free";
 }
 
 export async function getDashboardFeed(limit = 50) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (user) await ensureAppUser(supabase, user.id, user.email ?? "");
-  const plan = user ? await getUserPlan(supabase, user.id) : "basic";
+  const plan = user ? await getUserPlan(supabase, user.id) : "free";
   const cappedLimit = isAdmin(user?.email) ? ADMIN_FEED_LIMIT : feedLimit(plan);
   const { data: companies, error } = await supabase
     .from("companies")
@@ -160,7 +161,7 @@ export async function getSavedCompanyIds(): Promise<string[]> {
 export async function getSavedCompanies() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { companies: [], plan: "basic" as Plan, savedLimitReached: false };
+  if (!user) return { companies: [], plan: "free" as Plan, savedLimitReached: false };
   await ensureAppUser(supabase, user.id, user.email ?? "");
   const plan = await getUserPlan(supabase, user.id);
   const { data: rows } = await supabase
@@ -239,7 +240,7 @@ export async function getCompaniesList(options?: {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (user) await ensureAppUser(supabase, user.id, user.email ?? "");
-  const plan = user ? await getUserPlan(supabase, user.id) : "basic";
+  const plan = user ? await getUserPlan(supabase, user.id) : "free";
   const cappedLimit = isAdmin(user?.email) ? ADMIN_FEED_LIMIT : feedLimit(plan);
   const sort = options?.sort ?? "rank";
 

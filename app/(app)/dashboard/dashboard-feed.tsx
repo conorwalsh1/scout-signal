@@ -33,7 +33,7 @@ interface FeedItem {
 interface DashboardFeedProps {
   initialFeed: FeedItem[];
   savedIds: string[];
-  plan?: "basic" | "pro";
+  plan?: "free" | "basic" | "pro";
   totalRankedCount?: number | null;
   recentHeadlines?: RecentHeadline[];
 }
@@ -89,7 +89,7 @@ function eventTypeLabel(eventType: string): string {
 export function DashboardFeed({
   initialFeed,
   savedIds: initialSaved,
-  plan = "basic",
+  plan = "free",
   totalRankedCount = null,
   recentHeadlines = [],
 }: DashboardFeedProps) {
@@ -168,7 +168,7 @@ export function DashboardFeed({
 
   return (
     <>
-      {plan === "basic" && saveLimitHit && (
+      {plan !== "pro" && saveLimitHit && (
         <div
           className="mb-4 rounded-lg border p-3 text-sm text-[#FDE68A]"
           style={{
@@ -176,8 +176,8 @@ export function DashboardFeed({
             borderColor: "rgba(245, 158, 11, 0.35)",
           }}
         >
-          Save limit reached (10 on Basic).{" "}
-          <a href="/pricing" className="font-medium underline">Upgrade to Pro</a> for unlimited saved companies.
+          Save limit reached ({plan === "free" ? "10 on Free" : "25 on Basic"}).{" "}
+          <a href="/pricing" className="font-medium underline">{plan === "free" ? "View plans" : "Upgrade to Pro"}</a> for more saved companies.
         </div>
       )}
       {initialFeed.length > 0 && (

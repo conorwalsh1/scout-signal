@@ -24,8 +24,10 @@ Set these in Vercel (and in any environment where workers run):
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
 | `SUPABASE_SERVICE_KEY` | Supabase service role key (server/workers only) |
+| `NEXT_PUBLIC_APP_URL` | Canonical app URL, e.g. `https://signalscoutradar.com` (used for Stripe Checkout return URLs; can reduce 403 on checkout.stripe.com) |
 | `STRIPE_SECRET_KEY` | Stripe secret key |
 | `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `STRIPE_BASIC_PRICE_ID` | Stripe Price ID for Basic plan |
 | `STRIPE_PRO_PRICE_ID` | Stripe Price ID for Pro plan |
 
 For local workers, copy `.env.local.example` to `.env.local` and fill in the same values.
@@ -51,7 +53,8 @@ Run order: ingest → signals → score. Suggested cadence: ingest every 30–60
 ## 6. Stripe (production)
 
 - Create Pro product and recurring price in Stripe Dashboard.
-- Set `STRIPE_PRO_PRICE_ID` to that price ID.
+- Set `STRIPE_BASIC_PRICE_ID` to the Basic recurring price ID.
+- Set `STRIPE_PRO_PRICE_ID` to the Pro recurring price ID.
 - Add webhook endpoint: `https://your-domain.com/api/stripe/webhook`.
 - Subscribe to: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`.
 - Set `STRIPE_WEBHOOK_SECRET` from the webhook’s signing secret.

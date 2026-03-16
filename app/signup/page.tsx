@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { RadarAnimation } from "@/components/radar-animation";
@@ -11,12 +10,13 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    setMessage(null);
     if (!email.trim() || !password) {
       setError("Email and password are required.");
       return;
@@ -26,18 +26,40 @@ export default function SignupPage() {
       return;
     }
     setLoading(true);
-    const supabase = createClient();
-    const { error: err } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-    });
-    setLoading(false);
-    if (err) {
-      setError(err.message ?? "Sign up failed.");
-      return;
+    try {
+      const supabase = createClient();
+      const { data, error: err } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { emailRedirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback` : undefined },
+      });
+      if (err) {
+        const isRateLimit =
+          err.message?.toLowerCase().includes("rate limit") ||
+          err.message?.toLowerCase().includes("email rate limit");
+        setError(
+          isRateLimit
+            ? "Too many signup emails sent. Please try again in an hour."
+            : err.message ?? "Sign up failed."
+        );
+        return;
+      }
+      // Supabase often requires email confirmation: no session until user clicks link
+      if (data?.user && !data?.session) {
+        setMessage("Check your email for a confirmation link to activate your account.");
+        return;
+      }
+      // Signed in immediately (e.g. email confirmation disabled)
+      if (data?.session) {
+        window.location.href = "/dashboard";
+        return;
+      }
+      setMessage("Account created. Check your email to confirm, then log in.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setLoading(false);
     }
-    router.push("/dashboard");
-    router.refresh();
   }
 
   return (
@@ -89,6 +111,11 @@ export default function SignupPage() {
             {error && (
               <p className="text-sm text-danger" role="alert">
                 {error}
+              </p>
+            )}
+            {message && (
+              <p className="text-sm text-signal-green" role="status">
+                {message}
               </p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>

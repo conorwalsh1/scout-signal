@@ -1,49 +1,111 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 
+// Aligned with actual app behavior. See docs/PRICING_TABLE_AUDIT.md.
 const FEATURES = [
-  { feature: "Signal feed coverage", basic: "Top companies only", pro: "Full" },
-  { feature: "Company intelligence pages", basic: "Yes", pro: "Yes" },
-  { feature: "Signal scoring", basic: "Yes", pro: "Yes" },
-  { feature: "Signal tags and events", basic: "Yes", pro: "Yes" },
-  { feature: "Saved companies", basic: "25", pro: "Unlimited" },
-  { feature: "Search and ranking tools", basic: "Yes", pro: "Yes" },
-  { feature: "Signal history timeline", basic: "No", pro: "Yes" },
-  { feature: "Signal badges", basic: "No", pro: "Yes" },
-  { feature: "Signal alerts", basic: "No", pro: "Yes" },
-  { feature: "Advanced signal filters", basic: "No", pro: "Yes" },
-  { feature: "Data export", basic: "No", pro: "Yes" },
-  { feature: "Hiring trend analytics", basic: "—", pro: "Yes" },
-  { feature: "Signal score breakdown", basic: "—", pro: "Yes" },
+  { feature: "Signal feed coverage", free: "Live sample feed", basic: "Top companies only", pro: "Full" },
+  { feature: "Company intelligence pages", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Signal scoring", free: "Read-only preview", basic: "Yes", pro: "Yes" },
+  { feature: "Signal tags and events", free: "Preview only", basic: "Yes", pro: "Yes" },
+  { feature: "Saved companies", free: "10", basic: "25", pro: "Unlimited" },
+  { feature: "Search and ranking tools", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Signal history timeline", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Signal badges", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Signal alerts", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Advanced signal filters", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Data export", free: "No", basic: "No", pro: "Coming soon" },
+  { feature: "Hiring trend analytics", free: "No", basic: "—", pro: "Coming soon" },
+  { feature: "Signal score breakdown", free: "Yes", basic: "Yes", pro: "Yes" },
 ] as const;
 
 export default async function PricingPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("users").select("plan").eq("id", user.id).single()
+    : { data: null };
+  const currentPlan = (profile?.plan ?? "free") as "free" | "basic" | "pro";
 
   return (
     <main className="min-h-screen p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-foreground-heading mb-2">Pricing</h1>
         <p className="text-secondary mb-10">
-          Choose the plan that fits your recruiting workflow.
+          Start free, then upgrade when you need deeper coverage and automation.
         </p>
 
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
+          {/* Free */}
+          <div className="rounded-xl border border-border bg-card p-6 md:p-8 flex flex-col min-h-[220px]">
+            <h2 className="text-xl font-semibold text-foreground-heading">Free</h2>
+            <p className="mt-2 text-2xl font-bold text-foreground">
+              €0 <span className="text-sm font-normal text-muted-foreground">/ month</span>
+            </p>
+            <p className="mt-3 text-sm text-secondary">
+              Live preview of the signal feed and one example company page. Perfect for trying ScoutSignal.
+            </p>
+            <div className="mt-auto pt-6">
+              {user ? (
+                currentPlan === "free" ? (
+                  <button
+                    type="button"
+                    className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground opacity-50"
+                    disabled
+                  >
+                    Current plan
+                  </button>
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    Your account always includes Free. Downgrades available on request.
+                  </p>
+                )
+              ) : (
+                <Link href="/signup">
+                  <span className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">
+                    Start for free
+                  </span>
+                </Link>
+              )}
+            </div>
+          </div>
+
+          {/* Basic */}
           <div className="rounded-xl border border-border bg-card p-6 md:p-8 flex flex-col min-h-[220px]">
             <h2 className="text-xl font-semibold text-foreground-heading">Basic</h2>
             <p className="mt-2 text-2xl font-bold text-foreground">
               €39.99 <span className="text-sm font-normal text-muted-foreground">/ month</span>
             </p>
             <div className="mt-auto pt-6">
-              <Link href={user ? "/dashboard" : "/signup"}>
-                <Button variant="outline" className="w-full">
-                  {user ? "Current plan" : "Sign up for Basic"}
-                </Button>
-              </Link>
+              {user ? (
+                currentPlan === "basic" ? (
+                  <button
+                    type="button"
+                    className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground opacity-50"
+                    disabled
+                  >
+                    Current plan
+                  </button>
+                ) : (
+                  <form action="/api/stripe/checkout" method="POST" className="w-full">
+                    <input type="hidden" name="plan" value="basic" />
+                    <button
+                      type="submit"
+                      className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                    >
+                      {currentPlan === "pro" ? "Switch to Basic" : "Choose Basic"}
+                    </button>
+                  </form>
+                )
+              ) : (
+                <Link href="/signup">
+                  <span className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">
+                    Sign up for Basic
+                  </span>
+                </Link>
+              )}
             </div>
           </div>
+          {/* Pro */}
           <div
             className="rounded-xl border-2 border-signal-green/70 bg-card p-6 md:p-8 flex flex-col min-h-[220px]"
             style={{
@@ -60,13 +122,20 @@ export default async function PricingPage() {
             <div className="mt-auto pt-6">
               {user ? (
                 <form action="/api/stripe/checkout" method="POST" className="w-full">
-                  <Button type="submit" className="w-full">
-                    Upgrade to Pro
-                  </Button>
+                  <input type="hidden" name="plan" value="pro" />
+                  <button
+                    type="submit"
+                    className="inline-flex h-10 w-full items-center justify-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
+                    disabled={currentPlan === "pro"}
+                  >
+                    {currentPlan === "pro" ? "Current plan" : "Upgrade to Pro"}
+                  </button>
                 </form>
               ) : (
                 <Link href="/signup">
-                  <Button className="w-full">Get Pro</Button>
+                  <span className="inline-flex h-10 w-full items-center justify-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90">
+                    Get Pro
+                  </span>
                 </Link>
               )}
             </div>
@@ -79,10 +148,13 @@ export default async function PricingPage() {
             <thead>
               <tr className="border-b border-border bg-sidebar/50">
                 <th className="px-5 py-4 font-semibold text-foreground-heading">Feature</th>
-                <th className="px-5 py-4 font-semibold text-foreground-heading w-[120px] text-center">
+                <th className="px-5 py-4 font-semibold text-foreground-heading w-[110px] text-center">
+                  Free
+                </th>
+                <th className="px-5 py-4 font-semibold text-foreground-heading w-[110px] text-center">
                   Basic
                 </th>
-                <th className="px-5 py-4 font-semibold text-signal-green w-[120px] text-center">
+                <th className="px-5 py-4 font-semibold text-signal-green w-[110px] text-center">
                   Pro
                 </th>
               </tr>
@@ -91,6 +163,7 @@ export default async function PricingPage() {
               {FEATURES.map((row) => (
                 <tr key={row.feature} className="border-b border-border last:border-b-0 hover:bg-card/60 transition-colors">
                   <td className="px-5 py-4 text-foreground">{row.feature}</td>
+                  <td className="px-5 py-4 text-center text-secondary">{row.free}</td>
                   <td className="px-5 py-4 text-center text-secondary">{row.basic}</td>
                   <td className="px-5 py-4 text-center text-foreground font-medium">{row.pro}</td>
                 </tr>

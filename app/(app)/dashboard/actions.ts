@@ -7,7 +7,8 @@ import { savedLimit, type Plan } from "@/lib/plan-gating";
 
 async function getUserPlan(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<Plan> {
   const { data } = await supabase.from("users").select("plan").eq("id", userId).single();
-  return (data?.plan === "pro" ? "pro" : "basic") as Plan;
+  if (data?.plan === "pro" || data?.plan === "basic" || data?.plan === "free") return data.plan as Plan;
+  return "free";
 }
 
 export async function saveCompany(companyId: string) {
@@ -16,9 +17,9 @@ export async function saveCompany(companyId: string) {
   if (!user) return { error: "Not authenticated" };
   await ensureAppUser(supabase, user.id, user.email ?? "");
   const plan = await getUserPlan(supabase, user.id);
-  if (plan === "basic") {
+  if (plan !== "pro") {
     const { count } = await supabase.from("saved_targets").select("id", { count: "exact", head: true }).eq("user_id", user.id);
-    if ((count ?? 0) >= savedLimit("basic")) return { error: "saved_limit" };
+    if ((count ?? 0) >= savedLimit(plan)) return { error: "saved_limit" };
   }
   const { error } = await supabase.from("saved_targets").insert({
     user_id: user.id,

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/service";
+import type { Plan } from "@/lib/plan-gating";
 
 const relevant = new Set([
   "checkout.session.completed",
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "No signature" }, { status: 400 });
   }
 
-  let event: { type: string; data: { object?: { metadata?: { user_id?: string }; status?: string } } };
+  let event: { type: string; data: { object?: { metadata?: { user_id?: string; plan?: string }; status?: string } } };
   try {
     const stripe = getStripe();
     event = stripe.webhooks.constructEvent(body, sig, secret) as typeof event;
@@ -34,13 +35,14 @@ export async function POST(request: NextRequest) {
   }
 
   const supabase = createServiceClient();
-  const obj = event.data?.object as { metadata?: { user_id?: string }; client_reference_id?: string; status?: string };
+  const obj = event.data?.object as { metadata?: { user_id?: string; plan?: string }; client_reference_id?: string; status?: string };
   const userId = obj?.metadata?.user_id ?? (event.type === "checkout.session.completed" ? obj?.client_reference_id : undefined);
+  const purchasedPlan = (obj?.metadata?.plan === "basic" || obj?.metadata?.plan === "pro" ? obj.metadata.plan : "pro") as Exclude<Plan, "free">;
 
   if (event.type === "checkout.session.completed" && userId) {
     const { error } = await supabase
       .from("users")
-      .update({ plan: "pro" })
+      .update({ plan: purchasedPlan })
       .eq("id", userId);
     if (error) console.error("[stripe webhook] update user plan failed", error);
   }
@@ -48,15 +50,15 @@ export async function POST(request: NextRequest) {
   if (event.type === "customer.subscription.updated") {
     const status = obj?.status;
     if (userId && (status === "active" || status === "trialing")) {
-      await supabase.from("users").update({ plan: "pro" }).eq("id", userId);
+      await supabase.from("users").update({ plan: purchasedPlan }).eq("id", userId);
     }
     if (userId && (status === "canceled" || status === "unpaid" || status === "past_due")) {
-      await supabase.from("users").update({ plan: "basic" }).eq("id", userId);
+      await supabase.from("users").update({ plan: "free" }).eq("id", userId);
     }
   }
 
   if (event.type === "customer.subscription.deleted" && userId) {
-    await supabase.from("users").update({ plan: "basic" }).eq("id", userId);
+    await supabase.from("users").update({ plan: "free" }).eq("id", userId);
   }
 
   return NextResponse.json({ received: true });

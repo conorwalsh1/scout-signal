@@ -10,7 +10,7 @@ export default async function AccountPage() {
   const { data: profile } = user
     ? await supabase.from("users").select("plan").eq("id", user.id).single()
     : { data: null };
-  const plan = profile?.plan === "pro" ? "Pro" : "Basic";
+  const plan = profile?.plan === "pro" ? "Pro" : profile?.plan === "basic" ? "Basic" : "Free";
 
   return (
     <div>
@@ -23,10 +23,10 @@ export default async function AccountPage() {
         <p>
           <span className="font-medium text-foreground">Plan:</span> {plan}
         </p>
-        {plan === "Basic" && (
+        {plan !== "Pro" && (
           <p className="pt-4">
             <Link href="/pricing">
-              <Button>Upgrade to Pro</Button>
+              <Button>{plan === "Free" ? "Choose a paid plan" : "Upgrade to Pro"}</Button>
             </Link>
           </p>
         )}
