@@ -13,7 +13,12 @@ import {
 import { CompanyPageHeader } from "./company-page-header";
 import { DashboardCard } from "@/components/company-detail/dashboard-card";
 import { HiringActivityChart, type HiringActivityPoint } from "@/components/company-detail/hiring-activity-chart";
-import { buildScoreExplanation, getWhyThisMatters, getScoreBreakdown } from "@/lib/signal-engine/explanations";
+import {
+  buildScoreExplanation,
+  getWhyThisMatters,
+  getScoreBreakdown,
+  getSuggestedOutreachTiming,
+} from "@/lib/signal-engine/explanations";
 import { BADGES, getCompanyBadgesForPlan } from "@/lib/badges";
 import { CompanyBadge } from "@/components/company-badge";
 import type { Plan, ScoreComponents } from "@/types/database";
@@ -63,6 +68,7 @@ export default async function CompanyDetailPage({
   const whyThisMatters = getWhyThisMatters(comp);
   const scoreBreakdown = getScoreBreakdown(comp, company.score);
   const companyBadgeIds = getCompanyBadgesForPlan(comp, { score: company.score, plan });
+  const outreachTiming = getSuggestedOutreachTiming({ scoreComponents: comp, signals, events });
   const scoreOutOf10 = (company.score / 10).toFixed(1);
   const category = scoreCategory(company.score);
   const ft1000Source = company.company_sources?.find((s) => s.source_type === "ft1000");
@@ -367,6 +373,13 @@ export default async function CompanyDetailPage({
                   </dd>
                 </div>
               )}
+              <div>
+                <dt className="text-secondary">Suggested outreach timing</dt>
+                <dd className="text-foreground font-medium">{outreachTiming.window}</dd>
+                <dd className="mt-1 text-xs text-secondary">
+                  Based on {outreachTiming.basedOn.toLowerCase()}: {outreachTiming.rationale}
+                </dd>
+              </div>
               {monitoredSourceTypes.length > 0 && (
                 <div>
                   <dt className="text-secondary">Signal sources</dt>

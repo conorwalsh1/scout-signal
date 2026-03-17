@@ -1,6 +1,16 @@
 import type { ScoreComponents } from "@/types/database";
 import type { SignalType } from "./weights";
 
+export type OutreachWindow = "This week" | "Next 1–2 weeks" | "Monitor (2–4 weeks)";
+export type OutreachConfidence = "high" | "medium" | "low";
+
+export type OutreachTiming = {
+  window: OutreachWindow;
+  basedOn: string;
+  rationale: string;
+  confidence: OutreachConfidence;
+};
+
 /** Short label for "Latest Signal" column (e.g. "Hiring surge", "Funding", "Job posts"). */
 export function getLatestSignalLabel(scoreComponents: ScoreComponents): string {
   const c = scoreComponents;
@@ -275,4 +285,113 @@ export function getScoreBreakdown(
     points: Math.round((outOf10 * (p.share / sum)) * 10) / 10,
     key: p.key,
   }));
+}
+
+function daysSince(iso: string, now: Date): number {
+  const t = new Date(iso).getTime();
+  if (!Number.isFinite(t)) return Number.POSITIVE_INFINITY;
+  return Math.floor((now.getTime() - t) / (24 * 60 * 60 * 1000));
+}
+
+/**
+ * Suggested outreach timing (rule-based V1).
+ * Input uses the same signal/event shapes you already fetch on company pages.
+ */
+export function getSuggestedOutreachTiming(input: {
+  scoreComponents: ScoreComponents;
+  signals: Array<{ signal_type: string; occurred_at: string; confidence?: string | null }>;
+  events?: Array<{ event_type: string; detected_at: string; metadata_json?: Record<string, unknown> | null }>;
+  now?: Date;
+}): OutreachTiming {
+  const now = input.now ?? new Date();
+  const c = input.scoreComponents;
+  const signals = input.signals ?? [];
+  const events = input.events ?? [];
+
+  const latestSignalIso = (types: string[]) => {
+    const candidates = signals
+      .filter((s) => types.includes(s.signal_type) && typeof s.occurred_at === "string")
+      .map((s) => s.occurred_at)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    return candidates[0] ?? null;
+  };
+
+  const latestEventIso = (types: string[]) => {
+    const candidates = events
+      .filter((e) => types.includes(e.event_type) && typeof e.detected_at === "string")
+      .map((e) => e.detected_at)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    return candidates[0] ?? null;
+  };
+
+  // 1) Leadership (premium, time-sensitive)
+  const leadershipPresent =
+    !!c.leadership_hiring || ((c.leadership_job_posts ?? 0) > 0);
+  const leadershipIso = leadershipPresent
+    ? latestSignalIso(["leadership_hiring"]) ?? latestEventIso(["leadership_hiring_detected"]) ?? latestEventIso(["job_post_detected"])
+    : null;
+  const leadershipDays = leadershipIso ? daysSince(leadershipIso, now) : Number.POSITIVE_INFINITY;
+  if (leadershipPresent && leadershipDays <= 21) {
+    const window: OutreachWindow = leadershipDays <= 7 ? "This week" : "Next 1–2 weeks";
+    return {
+      window,
+      basedOn: "Exec signal",
+      rationale: "Exec changes are time-sensitive; outreach lands best before teams lock plans.",
+      confidence: leadershipDays <= 7 ? "high" : "medium",
+    };
+  }
+
+  // 2) Hiring surge / spike
+  const spikePresent = !!c.hiring_spike || ((c.job_posts ?? 0) > 0 && (c.recent_job_posts_7d ?? 0) > 0);
+  const spikeIso = spikePresent
+    ? latestSignalIso(["hiring_spike", "job_post"]) ?? latestEventIso(["job_post_detected"])
+    : null;
+  const spikeDays = spikeIso ? daysSince(spikeIso, now) : Number.POSITIVE_INFINITY;
+  if (spikePresent && spikeDays <= 14) {
+    return {
+      window: spikeDays <= 7 ? "This week" : "Next 1–2 weeks",
+      basedOn: "Hiring surge",
+      rationale: "New roles are opening; outreach works best while pipelines are still forming.",
+      confidence: spikeDays <= 7 ? "high" : "medium",
+    };
+  }
+
+  // 3) AI hiring / Engineering buildout
+  const aiPresent = !!c.ai_hiring || ((c.ai_job_posts ?? 0) > 0);
+  const engPresent = !!c.engineering_hiring || ((c.engineering_job_posts ?? 0) > 0);
+  const aiEngIso = (aiPresent || engPresent)
+    ? latestSignalIso(["ai_hiring", "engineering_hiring", "job_post"]) ?? latestEventIso(["job_post_detected"])
+    : null;
+  const aiEngDays = aiEngIso ? daysSince(aiEngIso, now) : Number.POSITIVE_INFINITY;
+  if ((aiPresent || engPresent) && aiEngDays <= 21) {
+    return {
+      window: "Next 1–2 weeks",
+      basedOn: aiPresent ? "AI hiring" : "Engineering buildout",
+      rationale: "Team buildout signals suggest near-term hiring needs—good time to open a relationship.",
+      confidence: "medium",
+    };
+  }
+
+  // 4) Funding
+  const fundingPresent = !!c.funding_event;
+  const fundingIso = fundingPresent
+    ? latestSignalIso(["funding_event"]) ?? latestEventIso(["funding_event_detected"])
+    : null;
+  const fundingDays = fundingIso ? daysSince(fundingIso, now) : Number.POSITIVE_INFINITY;
+  if (fundingPresent && fundingDays <= 30) {
+    return {
+      window: "Next 1–2 weeks",
+      basedOn: "Funding",
+      rationale: "Post-funding hiring ramps quickly, but teams often take a beat to plan.",
+      confidence: "medium",
+    };
+  }
+
+  // 5) Default
+  return {
+    window: "Monitor (2–4 weeks)",
+    basedOn: "Low recent activity",
+    rationale: "Signals aren’t fresh or strong enough for urgent outreach—keep on watch.",
+    confidence: "low",
+  };
 }
