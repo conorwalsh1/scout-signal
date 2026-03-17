@@ -21,6 +21,7 @@ import {
 } from "@/lib/signal-engine/explanations";
 import { BADGES, getCompanyBadgesForPlan } from "@/lib/badges";
 import { CompanyBadge } from "@/components/company-badge";
+import { formatDaysAgo, getProvenanceInfo, rankProvenanceSourceTypes } from "@/lib/provenance";
 import type { Plan, ScoreComponents } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
 
@@ -84,8 +85,38 @@ export default async function CompanyDetailPage({
       ? "Source: Funding news"
       : null;
 
+  const monitoredSourceTypes = Array.isArray(company.score_components_json?.monitored_source_types)
+    ? company.score_components_json.monitored_source_types.filter((value): value is string => typeof value === "string")
+    : [];
+  const highestSignalConfidence =
+    typeof company.score_components_json?.highest_signal_confidence === "string"
+      ? company.score_components_json.highest_signal_confidence
+      : null;
+  const newDepartmentNames = Array.isArray(company.score_components_json?.new_department_names)
+    ? company.score_components_json.new_department_names.filter((value): value is string => typeof value === "string")
+    : [];
+
+  const rankedSourceTypes = rankProvenanceSourceTypes(monitoredSourceTypes);
+  const directSources = rankedSourceTypes
+    .map((t) => getProvenanceInfo(t))
+    .filter((p): p is NonNullable<ReturnType<typeof getProvenanceInfo>> => !!p && p.kind === "direct")
+    .map((p) => p.label);
+  const inferredSources = rankedSourceTypes
+    .map((t) => getProvenanceInfo(t))
+    .filter((p): p is NonNullable<ReturnType<typeof getProvenanceInfo>> => !!p && p.kind === "inferred")
+    .map((p) => p.label);
+
   // Timeline: merge signals and events by date, sort descending
-  type TimelineEntry = { date: string; label: string; key: string; ts: number };
+  type TimelineEntry = {
+    date: string;
+    label: string;
+    key: string;
+    ts: number;
+    provenanceLabel: string | null;
+    provenanceKind: "direct" | "inferred" | "context" | null;
+    confidence?: string | null;
+    sourceUrl?: string | null;
+  };
   const timelineEntries: TimelineEntry[] = [];
   signals.forEach((s) => {
     const d = new Date(s.occurred_at);
@@ -99,7 +130,19 @@ export default async function CompanyDetailPage({
     if (s.signal_type === "new_department_hiring") label = "New department hiring detected";
     if (s.signal_type === "leadership_hiring") label = "Leadership hiring detected";
     if (s.signal_type === "funding_event") label = "Funding event detected";
-    timelineEntries.push({ date: dateStr, label, key: `s-${s.id}`, ts: d.getTime() });
+    const sourceType = (s as any)?.events?.source_type as string | undefined;
+    const sourceUrl = (s as any)?.events?.source_url as string | undefined;
+    const prov = getProvenanceInfo(sourceType);
+    timelineEntries.push({
+      date: dateStr,
+      label,
+      key: `s-${s.id}`,
+      ts: d.getTime(),
+      provenanceLabel: prov?.label ?? null,
+      provenanceKind: prov?.kind ?? null,
+      confidence: (s as any)?.confidence ?? null,
+      sourceUrl: sourceUrl ?? null,
+    });
   });
   events.forEach((e) => {
     const d = new Date(e.detected_at);
@@ -107,6 +150,7 @@ export default async function CompanyDetailPage({
     const meta = (e.metadata_json ?? {}) as Record<string, unknown>;
     const title = typeof meta.title === "string" ? meta.title : null;
     const jobCount = typeof meta.job_count === "number" ? meta.job_count : null;
+    const prov = getProvenanceInfo((e as any).source_type);
     timelineEntries.push({
       date: dateStr,
       label:
@@ -119,12 +163,26 @@ export default async function CompanyDetailPage({
             : title ?? e.event_type.replace(/_/g, " "),
       key: `e-${e.id}`,
       ts: d.getTime(),
+      provenanceLabel: prov?.label ?? null,
+      provenanceKind: prov?.kind ?? null,
+      sourceUrl: (e as any).source_url ?? null,
     });
   });
   timelineEntries.sort((a, b) => b.ts - a.ts);
-  const timelineByDate = timelineEntries.length
+  const timelineByDate: TimelineEntry[] = timelineEntries.length
     ? timelineEntries.slice(0, 4)
-    : [{ date: "Today", label: "No signals detected", key: "empty", ts: 0 }];
+    : [
+        {
+          date: "Today",
+          label: "No signals detected",
+          key: "empty",
+          ts: 0,
+          provenanceLabel: null,
+          provenanceKind: null,
+          confidence: null,
+          sourceUrl: null,
+        },
+      ];
 
   const jobPosts = (company.score_components_json?.job_posts as number) ?? 0;
   const engineeringJobs = (company.score_components_json?.engineering_job_posts as number) ?? 0;
@@ -146,17 +204,6 @@ export default async function CompanyDetailPage({
     typeof company.score_components_json?.funding_currency === "string"
       ? company.score_components_json.funding_currency
       : null;
-  const monitoredSourceTypes = Array.isArray(company.score_components_json?.monitored_source_types)
-    ? company.score_components_json.monitored_source_types.filter((value): value is string => typeof value === "string")
-    : [];
-  const highestSignalConfidence =
-    typeof company.score_components_json?.highest_signal_confidence === "string"
-      ? company.score_components_json.highest_signal_confidence
-      : null;
-  const newDepartmentNames = Array.isArray(company.score_components_json?.new_department_names)
-    ? company.score_components_json.new_department_names.filter((value): value is string => typeof value === "string")
-    : [];
-
   // Hiring velocity sparkline: aggregate job-post events by day (last 30 days).
   const hiringPoints: HiringActivityPoint[] = (() => {
     const counts = new Map<string, number>();
@@ -179,30 +226,17 @@ export default async function CompanyDetailPage({
     companyBadgeIds.length > 0
       ? BADGES.find((b) => b.id === companyBadgeIds[0])?.label ?? null
       : null;
-  const percentile =
-    rankContext.rank != null && rankContext.totalRanked > 0
-      ? Math.max(1, Math.round((rankContext.rank / rankContext.totalRanked) * 100))
-      : null;
-  const locationSnippet = ftHeadquarters ? ` in ${ftHeadquarters}` : "";
-  const industrySnippet = ftCategory ? ` in ${ftCategory}` : "";
-  const storyParts: string[] = [];
-  if (percentile != null) {
-    storyParts.push(
-      `${company.name} is in the top ${percentile}% of ${rankContext.totalRanked.toLocaleString()} tracked companies${
-        locationSnippet || industrySnippet
-      } this week`
-    );
-  } else {
-    storyParts.push(`${company.name} is showing elevated hiring signals${locationSnippet || industrySnippet}`);
-  }
-  if (primaryBadgeLabel) {
-    storyParts.push(
-      `with strong ${primaryBadgeLabel.toLowerCase()} signals${
-        hiringPoints.length > 0 ? " over the last 30 days" : ""
-      }`
-    );
-  }
-  const signalStory = `${storyParts.join(", ")}.`;
+  const latestEntry = timelineEntries[0] ?? null;
+  const latestWhen = latestEntry ? formatDaysAgo(new Date(latestEntry.ts).toISOString()) : null;
+  const latestWhere = latestEntry?.provenanceLabel ? `from ${latestEntry.provenanceLabel}` : null;
+  const whatChanged = primaryBadgeLabel ?? latestEntry?.label ?? "New signals detected";
+  const signalStory = [
+    `${whatChanged}`,
+    latestWhen ? `(${latestWhen})` : null,
+    latestWhere,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   return (
     <div className="space-y-3">
@@ -228,7 +262,24 @@ export default async function CompanyDetailPage({
 
       {/* Signal story – one-line analyst-style briefing */}
       <div className="rounded-md border border-border bg-card/80 px-4 py-2 text-sm text-secondary">
-        {signalStory}
+        <div className="flex flex-col gap-1">
+          <div className="text-secondary">
+            <span className="font-medium text-foreground">{signalStory}</span>
+          </div>
+          <div className="text-[11px] text-secondary">
+            {directSources.length > 0 ? (
+              <span>
+                Direct evidence: <span className="text-foreground">{directSources.join(", ")}</span>
+              </span>
+            ) : inferredSources.length > 0 ? (
+              <span>
+                Evidence (inferred): <span className="text-foreground">{inferredSources.join(", ")}</span>
+              </span>
+            ) : (
+              <span>Evidence: —</span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Primary row – keep essentials tight in a single band */}
@@ -278,7 +329,15 @@ export default async function CompanyDetailPage({
                   {timelineByDate.slice(0, 3).map((entry) => (
                     <li key={entry.key} className="flex gap-2">
                       <span className="shrink-0 text-secondary w-16">{entry.date}</span>
-                      <span className="flex-1">{entry.label}</span>
+                      <span className="flex-1">
+                        {entry.label}
+                        {(entry.provenanceLabel || entry.confidence) && (
+                          <span className="ml-2 text-[10px] text-secondary">
+                            {entry.provenanceLabel ? `· ${entry.provenanceLabel}` : ""}
+                            {entry.confidence ? ` · ${entry.confidence} confidence` : ""}
+                          </span>
+                        )}
+                      </span>
                     </li>
                   ))}
                 </ul>

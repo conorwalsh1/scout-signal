@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { buildScoreExplanation, getWhyThisMatters } from "@/lib/signal-engine/explanations";
 import { getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
 import { getCompanySiteUrl } from "@/lib/company-web";
+import { getProvenanceInfo, rankProvenanceSourceTypes } from "@/lib/provenance";
 import { CompanyBadge } from "@/components/company-badge";
 import { CompanyLogo } from "@/components/company-logo";
 import type { Plan, ScoreComponents } from "@/types/database";
@@ -145,7 +146,9 @@ export function CompanyCard({
   compact = false,
 }: CompanyCardProps) {
   const lines = buildScoreExplanation(score_components_json);
-  const badgeIds = pickDisplayBadges(getCompanyBadgesForPlan(score_components_json, { score, plan }), 3);
+  const allBadgeIds = getCompanyBadgesForPlan(score_components_json, { score, plan });
+  const badgeIds = pickDisplayBadges(allBadgeIds, 3);
+  const extraBadgesCount = Math.max(0, allBadgeIds.length - badgeIds.length);
   const date = new Date(last_calculated_at);
   const siteUrl = getCompanySiteUrl({ website, domain });
   const timeAgo =
@@ -157,6 +160,21 @@ export function CompanyCard({
     typeof score_components_json.highest_signal_confidence === "string"
       ? score_components_json.highest_signal_confidence
       : null;
+  const monitoredSourceTypes = Array.isArray(score_components_json.monitored_source_types)
+    ? score_components_json.monitored_source_types.filter((v): v is string => typeof v === "string")
+    : [];
+  const rankedSourceTypes = rankProvenanceSourceTypes(monitoredSourceTypes);
+  const directSources = rankedSourceTypes
+    .map((t) => getProvenanceInfo(t))
+    .filter((p): p is NonNullable<ReturnType<typeof getProvenanceInfo>> => !!p && p.kind === "direct")
+    .map((p) => p.label);
+  const inferredSources = rankedSourceTypes
+    .map((t) => getProvenanceInfo(t))
+    .filter((p): p is NonNullable<ReturnType<typeof getProvenanceInfo>> => !!p && p.kind === "inferred")
+    .map((p) => p.label);
+  const evidenceParts: string[] = [];
+  if (directSources.length > 0) evidenceParts.push(`Evidence: ${directSources.slice(0, 3).join(", ")}`);
+  else if (inferredSources.length > 0) evidenceParts.push(`Evidence: ${inferredSources.slice(0, 2).join(", ")}`);
   const recent7d = (score_components_json.recent_job_posts_7d as number) ?? 0;
   const previous7d = (score_components_json.previous_job_posts_7d as number) ?? 0;
   const trendLine =
@@ -165,9 +183,10 @@ export function CompanyCard({
       : null;
   const summary = getSignalSummary(score_components_json);
   const metadataParts = [
-    ft1000Line,
+    ...evidenceParts,
     trendLine,
     confidence ? `${confidence} confidence` : null,
+    ft1000Line,
     `Updated ${timeAgo.toLowerCase()}`,
   ].filter(Boolean);
   const rankMovement =
@@ -223,53 +242,59 @@ export function CompanyCard({
           </div>
           <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
             {rankPosition != null ? (
-              <div
-                className="flex flex-col items-end rounded-lg border px-2 py-1.5 text-right"
-                style={rankDisplayStyle}
-              >
-                <span className="font-mono text-xl font-bold leading-none">#{rankPosition}</span>
+              <div className="rounded-md border px-2 py-1 text-right text-xs" style={rankDisplayStyle}>
+                <div className="font-mono font-semibold leading-none">
+                  #{rankPosition}{totalRankedCount ? <span className="opacity-70"> / {totalRankedCount}</span> : null}
+                </div>
                 {movementLabel && rankMovement != null ? (
-                  <span
-                    className={`mt-1 inline-flex items-center gap-1 text-[10px] font-semibold ${
-                      rankMovement > 0 ? "text-signal-green" : "text-red-400"
-                    }`}
-                  >
+                  <div className={`mt-1 inline-flex items-center gap-1 text-[10px] font-semibold ${rankMovement > 0 ? "text-signal-green" : "text-red-400"}`}>
                     {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
                     {movementLabel}
-                  </span>
+                  </div>
                 ) : null}
-                {totalRankedCount && (
-                  <span className="text-[10px] opacity-80">of {totalRankedCount}</span>
-                )}
               </div>
             ) : null}
             <Button
-              variant="ghost"
-              size="icon"
+              variant="outline"
+              size="sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                router.push(`/companies/${id}`);
+              }}
+              className="h-8 px-2.5 text-xs"
+            >
+              View
+            </Button>
+            <Button
+              variant={isSaved ? "secondary" : "default"}
+              size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 isSaved ? onUnsave(id) : onSave(id);
               }}
-              aria-label={isSaved ? "Remove from saved" : "Save company"}
-              className="h-8 w-8 text-secondary hover:text-foreground"
+              className="h-8 px-2.5 text-xs"
             >
-              {isSaved ? (
-                <IconBookmark className="h-4 w-4 text-signal-green" filled />
-              ) : (
-                <IconBookmark className="h-4 w-4" />
-              )}
+              <span className="inline-flex items-center gap-1.5">
+                <IconBookmark className={isSaved ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={isSaved} />
+                {isSaved ? "Saved" : "Save"}
+              </span>
             </Button>
           </div>
         </div>
         <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
-        <p className="mt-0.5 line-clamp-2 text-sm text-foreground">{summary}</p>
+        <p className="mt-0.5 line-clamp-1 text-sm text-foreground">{summary}</p>
         <p className="mt-1 text-xs text-secondary">{metadataParts.join(" · ")}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <ScoreBadge score={score} showMeter={false} />
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap items-center gap-1">
             {badgeIds.map((bid) => (
               <CompanyBadge key={bid} badgeId={bid} />
             ))}
+            {extraBadgesCount > 0 && (
+              <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary">
+                +{extraBadgesCount}
+              </span>
+            )}
           </div>
         </div>
       </article>
@@ -290,7 +315,7 @@ export function CompanyCard({
       className="group cursor-pointer rounded-lg border border-border bg-card p-5 transition-all duration-200 hover:border-signal-green/50 hover:shadow-[0_6px_24px_rgba(0,0,0,0.25),0_0_0_1px_rgba(34,197,94,0.2)] hover:-translate-y-0.5"
     >
       <div className="flex items-start gap-4">
-        {/* Left: icon (favicon or initials fallback), name, badge */}
+        {/* Left: identity */}
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
             <CompanyLogo name={name} website={website} domain={domain} className="h-full w-full object-contain" />
@@ -320,71 +345,60 @@ export function CompanyCard({
           </div>
         </div>
 
-        {/* Middle: why this matters + insight */}
+        {/* Middle: why this matters + insight (scan-first) */}
         <div className="hidden min-w-0 flex-[1.2] flex-col gap-1 sm:flex">
           <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
-          <p className="text-sm font-medium text-foreground">{summary}</p>
+          <p className="text-sm font-medium text-foreground line-clamp-1">{summary}</p>
           <p className="text-xs text-secondary">
             {metadataParts.join(" · ")}
           </p>
-          <div className="mt-1 flex flex-wrap gap-1">
+          <div className="mt-1 flex flex-wrap items-center gap-1">
             {badgeIds.map((bid) => (
               <CompanyBadge key={bid} badgeId={bid} />
             ))}
+            {extraBadgesCount > 0 && (
+              <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary">
+                +{extraBadgesCount}
+              </span>
+            )}
           </div>
         </div>
 
-        {/* Right: leaderboard rank + actions */}
-        <div className="ml-auto flex shrink-0 items-start gap-3">
+        {/* Right: compact rank + clear actions */}
+        <div className="ml-auto flex shrink-0 items-start gap-3" onClick={(e) => e.stopPropagation()}>
           {rankPosition != null ? (
-            <div
-              className="flex min-w-[6.5rem] flex-col items-end rounded-xl border px-3 py-2 text-right"
-              style={rankDisplayStyle}
-            >
-              <span className="text-[10px] font-semibold uppercase tracking-[0.22em] opacity-80">
-                Rank
-              </span>
-              <span className="font-mono text-3xl font-bold leading-none sm:text-4xl">
-                #{rankPosition}
-              </span>
+            <div className="rounded-lg border px-3 py-2 text-right text-xs" style={rankDisplayStyle}>
+              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-80">Rank</div>
+              <div className="mt-0.5 font-mono text-lg font-bold leading-none">
+                #{rankPosition}{totalRankedCount ? <span className="text-xs font-medium opacity-70"> / {totalRankedCount}</span> : null}
+              </div>
               {movementLabel && rankMovement != null ? (
-                <span
-                  className={
-                    rankMovement > 0
-                      ? "mt-2 inline-flex items-center gap-1 rounded-full bg-[rgba(34,197,94,0.12)] px-2 py-1 text-[11px] font-semibold text-signal-green"
-                      : "mt-2 inline-flex items-center gap-1 rounded-full bg-[rgba(239,68,68,0.12)] px-2 py-1 text-[11px] font-semibold text-red-400"
-                  }
-                >
-                  {rankMovement > 0 ? (
-                    <IconArrowUp className="h-3 w-3" />
-                  ) : (
-                    <IconArrowDown className="h-3 w-3" />
-                  )}
+                <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovement > 0 ? "text-signal-green" : "text-red-400"}`}>
+                  {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
                   {movementLabel}
-                </span>
-              ) : (
-                <span className="mt-2 text-[11px] font-medium opacity-70">
-                  {totalRankedCount ? `of ${totalRankedCount}` : "new"}
-                </span>
-              )}
+                </div>
+              ) : null}
             </div>
           ) : null}
-          <div className="flex shrink-0 items-center" onClick={(e) => e.stopPropagation()}>
+          <div className="flex flex-col gap-2">
             <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                isSaved ? onUnsave(id) : onSave(id);
-              }}
-              aria-label={isSaved ? "Remove from saved" : "Save company"}
-              className="text-secondary hover:text-foreground"
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/companies/${id}`)}
+              className="h-9 px-3"
             >
-              {isSaved ? (
-                <IconBookmark className="h-4 w-4 text-signal-green" filled />
-              ) : (
-                <IconBookmark className="h-4 w-4" />
-              )}
+              View
+            </Button>
+            <Button
+              variant={isSaved ? "secondary" : "default"}
+              size="sm"
+              onClick={() => (isSaved ? onUnsave(id) : onSave(id))}
+              className="h-9 px-3"
+            >
+              <span className="inline-flex items-center gap-2">
+                <IconBookmark className={isSaved ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={isSaved} />
+                {isSaved ? "Saved" : "Save"}
+              </span>
             </Button>
           </div>
         </div>
@@ -393,12 +407,17 @@ export function CompanyCard({
       {/* Mobile: why this matters + summary below */}
       <div className="mt-3 flex flex-col gap-1 sm:hidden">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
-        <p className="text-sm text-foreground">{summary}</p>
+        <p className="text-sm text-foreground line-clamp-1">{summary}</p>
         <p className="text-xs text-secondary">{metadataParts.join(" · ")}</p>
-        <div className="mt-1 flex flex-wrap gap-1">
+        <div className="mt-1 flex flex-wrap items-center gap-1">
           {badgeIds.map((bid) => (
             <CompanyBadge key={bid} badgeId={bid} />
           ))}
+          {extraBadgesCount > 0 && (
+            <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary">
+              +{extraBadgesCount}
+            </span>
+          )}
         </div>
       </div>
     </article>

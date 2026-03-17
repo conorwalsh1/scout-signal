@@ -65,7 +65,8 @@ export async function getCompanySignals(companyId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("signals")
-    .select("id, signal_type, weight, confidence, occurred_at")
+    // Include event provenance so UI can show "where it came from"
+    .select("id, signal_type, weight, confidence, occurred_at, event_id, events ( source_type, source_url )")
     .eq("company_id", companyId)
     .order("occurred_at", { ascending: false })
     .limit(20);
@@ -76,7 +77,7 @@ export async function getCompanyEvents(companyId: string) {
   const supabase = await createClient();
   const { data } = await supabase
     .from("events")
-    .select("id, event_type, source_url, detected_at, metadata_json")
+    .select("id, event_type, source_type, source_url, detected_at, metadata_json")
     .eq("company_id", companyId)
     .order("detected_at", { ascending: false })
     .limit(20);
