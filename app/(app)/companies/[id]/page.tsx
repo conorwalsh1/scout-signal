@@ -330,7 +330,18 @@ export default async function CompanyDetailPage({
                     <li key={entry.key} className="flex gap-2">
                       <span className="shrink-0 text-secondary w-16">{entry.date}</span>
                       <span className="flex-1">
-                        {entry.label}
+                        {entry.sourceUrl ? (
+                          <a
+                            href={entry.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                          >
+                            {entry.label}
+                          </a>
+                        ) : (
+                          entry.label
+                        )}
                         {(entry.provenanceLabel || entry.confidence) && (
                           <span className="ml-2 text-[10px] text-secondary">
                             {entry.provenanceLabel ? `· ${entry.provenanceLabel}` : ""}
