@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getCompaniesList, getSavedCompanyIds, getCompaniesCount, getRecentSignalHeadlines } from "./data";
 import { DashboardFeed } from "./dashboard-feed";
-import { Button } from "@/components/ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/auth/admin";
 
@@ -88,13 +87,11 @@ export default async function DashboardPage() {
           <p className="text-sm text-[#FDE68A]">
             You&apos;re viewing a limited feed. {plan === "free" ? "Choose a paid plan" : "Upgrade to Pro"} for broader access.
           </p>
-          <Link href="/pricing">
-            <Button
-              size="sm"
-              className="bg-amber-accent text-sidebar font-medium hover:opacity-90"
-            >
-              {plan === "free" ? "View plans" : "Upgrade to Pro"}
-            </Button>
+          <Link
+            href="/pricing"
+            className="inline-flex h-9 items-center rounded-md bg-amber-accent px-3 text-sm font-medium text-sidebar transition-opacity hover:opacity-90"
+          >
+            {plan === "free" ? "View plans" : "Upgrade to Pro"}
           </Link>
         </div>
       )}

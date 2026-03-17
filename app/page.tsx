@@ -7,7 +7,8 @@ import {
   getRadarSignalLabels,
 } from "@/lib/landing-data";
 import { LandingHeroWithRadar } from "@/components/landing/landing-hero-with-radar";
-import { BADGES } from "@/lib/badges";
+import { LandingBadges } from "@/components/landing/landing-badges";
+import { LandingCompanyCard } from "@/components/landing/landing-company-card";
 
 export const dynamic = "force-dynamic";
 
@@ -70,24 +71,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-border/50 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-bold text-foreground-heading">Signals we detect</h2>
-          <p className="mt-2 text-sm text-secondary">
-            Hiring spikes, AI hiring, engineering buildout, funding, and leadership signals.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-2">
-            {BADGES.map((badge) => (
-              <span
-                key={badge.id}
-                className="inline-flex items-center rounded-md border border-border bg-card px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-foreground"
-              >
-                {badge.label}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
+      <LandingBadges />
 
       <section className="border-t border-border/50 bg-card/30 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
@@ -95,19 +79,49 @@ export default async function HomePage() {
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {latestCompanies.length > 0 ? (
               latestCompanies.map((company) => (
-                <SimpleCompanyCard
-                  key={company.id}
-                  name={company.name}
-                  score={(company.score / 10).toFixed(1)}
-                  label={company.latest_signal_label}
-                  insight={company.insight_line}
-                />
+                <LandingCompanyCard key={company.id} company={company} />
               ))
             ) : (
               <>
-                <SimpleCompanyCard name="Beta Labs" score="10.0" label="Hiring Surge" insight="12 roles posted this week" />
-                <SimpleCompanyCard name="Gamma Inc" score="9.2" label="Funding Event" insight="Series A announced" />
-                <SimpleCompanyCard name="Acme Corp" score="8.7" label="Engineering Hiring" insight="Backend team expansion" />
+                <LandingCompanyCard
+                  company={{
+                    id: "beta-labs",
+                    name: "Beta Labs",
+                    domain: "betalabs.example",
+                    website: "https://betalabs.example",
+                    score: 100,
+                    last_calculated_at: new Date().toISOString(),
+                    score_components_json: {} as any,
+                    latest_signal_label: "Hiring Surge",
+                    insight_line: "12 roles posted this week",
+                  }}
+                />
+                <LandingCompanyCard
+                  company={{
+                    id: "gamma-inc",
+                    name: "Gamma Inc",
+                    domain: "gammainc.example",
+                    website: "https://gammainc.example",
+                    score: 92,
+                    last_calculated_at: new Date().toISOString(),
+                    score_components_json: {} as any,
+                    latest_signal_label: "Funding Event",
+                    insight_line: "Series A announced",
+                  }}
+                />
+                <LandingCompanyCard
+                  company={{
+                    id: "acme-corp",
+                    name: "Acme Corp",
+                    domain: "acme.example",
+                    website: "https://acme.example",
+                    score: 87,
+                    last_calculated_at: new Date().toISOString(),
+                    score_components_json: {} as any,
+                    latest_signal_label: "Engineering Hiring",
+                    insight_line: "Backend team expansion",
+                  }}
+                />
               </>
             )}
           </div>
@@ -159,27 +173,6 @@ function InfoCard({ title, body }: { title: string; body: string }) {
     <div className="rounded-xl border border-border bg-card p-6">
       <h3 className="text-lg font-semibold text-foreground-heading">{title}</h3>
       <p className="mt-3 text-sm leading-relaxed text-secondary">{body}</p>
-    </div>
-  );
-}
-
-function SimpleCompanyCard({
-  name,
-  score,
-  label,
-  insight,
-}: {
-  name: string;
-  score: string;
-  label: string;
-  insight: string;
-}) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-5">
-      <p className="font-semibold text-foreground-heading">{name}</p>
-      <p className="mt-1 text-xs font-medium text-signal-green">Signal Score {score}</p>
-      <p className="mt-2 text-sm text-foreground">{label}</p>
-      <p className="mt-1 text-sm text-secondary">{insight}</p>
     </div>
   );
 }
