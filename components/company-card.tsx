@@ -261,18 +261,22 @@ export function CompanyCard({
                 e.stopPropagation();
                 router.push(`/companies/${id}`);
               }}
-              className="h-8 px-2.5 text-xs"
+              className="h-8 px-2.5 text-xs bg-card/30 hover:bg-card/50 text-foreground border-border"
             >
               View
             </Button>
             <Button
-              variant={isSaved ? "secondary" : "default"}
+              variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
                 isSaved ? onUnsave(id) : onSave(id);
               }}
-              className="h-8 px-2.5 text-xs"
+              className={
+                isSaved
+                  ? "h-8 px-2.5 text-xs bg-[rgba(34,197,94,0.10)] hover:bg-[rgba(34,197,94,0.14)] border-signal-green/30 text-foreground"
+                  : "h-8 px-2.5 text-xs bg-card/30 hover:bg-card/50 text-foreground border-border"
+              }
             >
               <span className="inline-flex items-center gap-1.5">
                 <IconBookmark className={isSaved ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={isSaved} />
@@ -385,15 +389,19 @@ export function CompanyCard({
               variant="outline"
               size="sm"
               onClick={() => router.push(`/companies/${id}`)}
-              className="h-9 px-3"
+              className="h-9 px-3 bg-card/30 hover:bg-card/50 text-foreground border-border"
             >
               View
             </Button>
             <Button
-              variant={isSaved ? "secondary" : "default"}
+              variant="outline"
               size="sm"
               onClick={() => (isSaved ? onUnsave(id) : onSave(id))}
-              className="h-9 px-3"
+              className={
+                isSaved
+                  ? "h-9 px-3 bg-[rgba(34,197,94,0.10)] hover:bg-[rgba(34,197,94,0.14)] border-signal-green/30 text-foreground"
+                  : "h-9 px-3 bg-card/30 hover:bg-card/50 text-foreground border-border"
+              }
             >
               <span className="inline-flex items-center gap-2">
                 <IconBookmark className={isSaved ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={isSaved} />
