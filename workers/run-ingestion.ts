@@ -17,13 +17,16 @@ import { withRetry } from "@/lib/retry";
 import type { RawIngestionEvent } from "@/types/ingestion";
 import type { Company } from "@/types/database";
 
-const CONNECTORS = [
+const CORE_CONNECTORS = [
   careerPagesConnector,
-  ft1000CareersConnector,
   greenhouseHiringConnector,
   leverHiringConnector,
   ashbyHiringConnector,
   fundingNewsConnector,
+];
+
+const STATIC_CONNECTORS = [
+  ft1000CareersConnector,
 ];
 
 function getLogger() {
@@ -70,14 +73,9 @@ function deriveCompanyWebFromSourceUrl(
 
 async function ensureCompany(
   supabase: ReturnType<typeof createServiceClient>,
+  companies: Pick<Company, "id" | "name" | "domain">[],
   raw: RawIngestionEvent
 ): Promise<string> {
-  const { data: existing } = await supabase
-    .from("companies")
-    .select("id, name, domain")
-    .limit(5000);
-
-  const companies = (existing ?? []) as Pick<Company, "id" | "name" | "domain">[];
   const matched = matchCompany(raw, companies);
   if (matched) return matched;
 
@@ -89,46 +87,73 @@ async function ensureCompany(
       domain: domain ?? null,
       website: website ?? null,
     })
-    .select("id")
+    .select("id, name, domain")
     .single();
 
   if (error) throw new Error(error.message ?? "Failed to upsert company");
   if (!inserted?.id) throw new Error("Failed to create company");
+  companies.push({
+    id: inserted.id,
+    name: inserted.name ?? raw.company_name_raw,
+    domain: inserted.domain ?? domain ?? null,
+  });
   return inserted.id;
 }
 
-async function eventExists(
-  supabase: ReturnType<typeof createServiceClient>,
-  source_url: string,
-  event_type: string,
-  external_id: string | null
-): Promise<boolean> {
-  if (external_id) {
-    const { data } = await supabase
-      .from("events")
-      .select("id")
-      .eq("external_id", external_id)
-      .limit(1)
-      .single();
-    return !!data;
-  }
-  const { data } = await supabase
-    .from("events")
-    .select("id")
-    .eq("source_url", source_url)
-    .eq("event_type", event_type)
-    .limit(1)
-    .single();
-  return !!data;
+async function loadCompanies(
+  supabase: ReturnType<typeof createServiceClient>
+): Promise<Pick<Company, "id" | "name" | "domain">[]> {
+  const { data, error } = await supabase
+    .from("companies")
+    .select("id, name, domain")
+    .limit(5000);
+
+  if (error) throw new Error(error.message ?? "Failed to load companies");
+  return (data ?? []) as Pick<Company, "id" | "name" | "domain">[];
 }
 
-export async function run() {
+async function loadExistingEventKeys(
+  supabase: ReturnType<typeof createServiceClient>,
+  rawEvents: RawIngestionEvent[]
+): Promise<{ externalIds: Set<string>; sourcePairs: Set<string> }> {
+  const externalIds = Array.from(
+    new Set(rawEvents.map((raw) => raw.external_id).filter((value): value is string => Boolean(value)))
+  );
+  const sourcePairs = new Set<string>();
+
+  if (externalIds.length > 0) {
+    const { data, error } = await supabase
+      .from("events")
+      .select("external_id")
+      .in("external_id", externalIds);
+    if (error) throw new Error(error.message ?? "Failed to load existing event ids");
+    return {
+      externalIds: new Set((data ?? []).map((row) => row.external_id).filter((value): value is string => Boolean(value))),
+      sourcePairs,
+    };
+  }
+
+  for (const raw of rawEvents) {
+    sourcePairs.add(`${raw.source_url}::${raw.event_type}`);
+  }
+
+  return {
+    externalIds: new Set<string>(),
+    sourcePairs,
+  };
+}
+
+export async function run(options?: { includeStaticConnectors?: boolean }) {
   const log = getLogger();
   const supabase = createServiceClient();
+  const connectors = options?.includeStaticConnectors
+    ? [...CORE_CONNECTORS, ...STATIC_CONNECTORS]
+    : CORE_CONNECTORS;
+  const companies = await loadCompanies(supabase);
   let totalInserted = 0;
   let totalSkipped = 0;
 
-  for (const connector of CONNECTORS) {
+  for (const connector of connectors) {
     let rawEvents: RawIngestionEvent[];
     try {
       rawEvents = await withRetry(() => connector.fetch(), { attempts: 3, delayMs: 2000 });
@@ -142,43 +167,55 @@ export async function run() {
     }
     log.log(`Connector ${connector.sourceType} fetched ${rawEvents.length} raw events`);
 
+    let existingEventKeys: { externalIds: Set<string>; sourcePairs: Set<string> };
+    try {
+      existingEventKeys = await loadExistingEventKeys(supabase, rawEvents);
+    } catch (err) {
+      log.log("Failed to load existing event keys", { sourceType: connector.sourceType, err: String(err) });
+      continue;
+    }
+
     for (const raw of rawEvents) {
       if (!isValidRawEvent(raw)) {
         log.log("Skipping invalid raw event", { sourceType: connector.sourceType });
         continue;
       }
       try {
-        const exists = await eventExists(
-            supabase,
-            raw.source_url,
-            raw.event_type,
-            raw.external_id ?? null
-          );
-          if (exists) {
-            totalSkipped++;
-            continue;
-          }
-
-          const company_id = await ensureCompany(supabase, raw);
-          const { error } = await supabase.from("events").insert({
-            source_type: connector.sourceType,
-            source_url: raw.source_url,
-            external_id: raw.external_id ?? null,
-            company_name_raw: raw.company_name_raw,
-            company_id,
-            event_type: raw.event_type,
-            metadata_json: raw.metadata ?? {},
-            detected_at: raw.detected_at,
-          });
-          if (error) {
-            log.log("Event insert error", { error: error.message, source_url: raw.source_url });
-            continue;
-          }
-          totalInserted++;
-        } catch (e) {
-          log.log("Event processing error", { err: String(e), source_url: raw.source_url });
+        const sourcePair = `${raw.source_url}::${raw.event_type}`;
+        const exists = raw.external_id
+          ? existingEventKeys.externalIds.has(raw.external_id)
+          : existingEventKeys.sourcePairs.has(sourcePair);
+        if (exists) {
+          totalSkipped++;
+          continue;
         }
+
+        const company_id = await ensureCompany(supabase, companies, raw);
+        const { error } = await supabase.from("events").insert({
+          source_type: connector.sourceType,
+          source_url: raw.source_url,
+          external_id: raw.external_id ?? null,
+          company_name_raw: raw.company_name_raw,
+          company_id,
+          event_type: raw.event_type,
+          metadata_json: raw.metadata ?? {},
+          detected_at: raw.detected_at,
+        });
+        if (error) {
+          log.log("Event insert error", { error: error.message, source_url: raw.source_url });
+          continue;
+        }
+
+        if (raw.external_id) {
+          existingEventKeys.externalIds.add(raw.external_id);
+        } else {
+          existingEventKeys.sourcePairs.add(sourcePair);
+        }
+        totalInserted++;
+      } catch (e) {
+        log.log("Event processing error", { err: String(e), source_url: raw.source_url });
       }
+    }
   }
 
   log.log("Ingestion complete", { totalInserted, totalSkippedAlreadyExist: totalSkipped });

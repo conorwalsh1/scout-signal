@@ -30,12 +30,14 @@ For **signalscoutradar.com**, DNS must point **only** to Vercel. If the domain i
 
 | Name | Type | Value |
 |------|------|--------|
-| `@` | A | `216.198.79.1` |
-| `www` | CNAME | `186d79171a1227f6.vercel-dns-017.com.` |
+| `@` | A | `76.76.21.21` |
+| `www` | CNAME | `cname.vercel-dns.com` |
 
 Use the exact values Vercel shows under **"DNS Change Recommended"** for this project if they differ from the table above.
 
 - **Remove** any record that points to a hostname ending in **cloudfront.net** or to an IP you know is AWS.
+- **Remove** any old `www` A record if one exists.
+- **Remove** any URL forwarding, masked forwarding, or parking rule for either `signalscoutradar.com` or `www.signalscoutradar.com`.
 - Ensure the **root** (`@`) uses the A record above and **www** uses the CNAME above (or Vercel’s current recommended values).
 
 ### If Vercel’s "Edit" fails with validation errors
@@ -43,9 +45,9 @@ Use the exact values Vercel shows under **"DNS Change Recommended"** for this pr
 When editing an A or CNAME record, Vercel sometimes shows **"Invalid request: 'value' should match format 'ipv4'"** or **"Invalid \`name\` parameter."** Workarounds:
 
 1. **Add new, then delete old**
-   - **Add** a new A record: Name `@`, Value `216.198.79.1`, TTL 300, **Comment left empty**.
-   - If that succeeds, **delete** the old A record (e.g. the one with `76.76.21.21` or any CloudFront-related target).
-   - For **www**: **Add** a new CNAME: Name `www`, Value `186d79171a1227f6.vercel-dns-017.com.` Then remove any old CNAME for `www` that points to CloudFront or the wrong target.
+   - **Add** a new A record: Name `@`, Value `76.76.21.21`, TTL 300, **Comment left empty**.
+   - If that succeeds, **delete** the old A record or any A record pointing at the wrong provider.
+   - For **www**: **Add** a new CNAME: Name `www`, Value `cname.vercel-dns.com`, TTL 300. Then remove any old `www` CNAME or A record that points anywhere else.
 
 2. **Strict typing**
    - For **Name**, use exactly `@` (root) or `www` (no spaces or extra characters).
@@ -64,7 +66,7 @@ When editing an A or CNAME record, Vercel sometimes shows **"Invalid request: 'v
      dig signalscoutradar.com +short
      dig www.signalscoutradar.com +short
      ```
-   - You should see a Vercel IP (e.g. `216.198.79.1` or `76.76.21.21`) or a Vercel hostname (e.g. `...vercel-dns...`), **not** a hostname ending in `cloudfront.net`.
+   - You should see `76.76.21.21` for the apex/root domain and a Vercel hostname for `www` (such as `cname.vercel-dns.com`), **not** a hostname ending in `cloudfront.net` and not an old non-Vercel IP.
 
 2. **Response headers**
    - Open the live site, trigger the action that was failing (e.g. submit login).
@@ -74,5 +76,6 @@ When editing an A or CNAME record, Vercel sometimes shows **"Invalid request: 'v
 3. **Smoke test**
    - Load **https://signalscoutradar.com** (or **https://www.signalscoutradar.com**).
    - Open **Log in** and submit the form. You should get either the dashboard or a login error from the app, **not** the CloudFront 403 page.
+   - If the apex/root host works but `www` still shows CloudFront, the `www` DNS record is still wrong or still propagating.
 
 Allow 5–15 minutes (or up to 48 hours in rare cases) for DNS propagation after changing records.
