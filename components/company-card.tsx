@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import { ScoreBadge } from "./score-badge";
 import { Button } from "./ui/button";
 import { buildScoreExplanation, getWhyThisMatters } from "@/lib/signal-engine/explanations";
-import { getCompanyBadges } from "@/lib/badges";
+import { getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
 import { getCompanySiteUrl } from "@/lib/company-web";
 import { CompanyBadge } from "@/components/company-badge";
 import { CompanyLogo } from "@/components/company-logo";
-import type { ScoreComponents } from "@/types/database";
+import type { Plan, ScoreComponents } from "@/types/database";
 
 function IconBookmark({ className, filled }: { className?: string; filled?: boolean }) {
   return (
@@ -97,6 +97,7 @@ interface CompanyCardProps {
   isSaved: boolean;
   onSave: (companyId: string) => void;
   onUnsave: (companyId: string) => void;
+  plan?: Plan;
   /** Use stacked layout to avoid overlap in narrow grids (e.g. spotlight). */
   compact?: boolean;
 }
@@ -140,10 +141,11 @@ export function CompanyCard({
   isSaved,
   onSave,
   onUnsave,
+  plan = "free",
   compact = false,
 }: CompanyCardProps) {
   const lines = buildScoreExplanation(score_components_json);
-  const badgeIds = getCompanyBadges(score_components_json, { score });
+  const badgeIds = pickDisplayBadges(getCompanyBadgesForPlan(score_components_json, { score, plan }), 3);
   const date = new Date(last_calculated_at);
   const siteUrl = getCompanySiteUrl({ website, domain });
   const timeAgo =

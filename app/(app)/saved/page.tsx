@@ -23,7 +23,7 @@ export default async function SavedPage() {
           </Link>
         </div>
       )}
-      <TrackedCompaniesList initialCompanies={companies} />
+      <TrackedCompaniesList initialCompanies={companies} plan={plan} />
     </div>
   );
 }

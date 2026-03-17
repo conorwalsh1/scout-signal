@@ -33,12 +33,29 @@ export async function POST(request: Request) {
 
   try {
     const stripe = getStripe();
-    // Prefer canonical app URL so Stripe Checkout session has correct return domain (helps avoid 403 on checkout.stripe.com).
-    const baseUrl =
-      process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
-      request.headers.get("origin") ||
-      request.url.split("/").slice(0, 3).join("/");
+    /**
+     * Prefer the actual request origin/host for return URLs.
+     *
+     * Why: Next.js server-side POSTs can omit the Origin header, and Vercel sets VERCEL_URL
+     * to the deployment hostname (often a preview URL). If we use that, Stripe Checkout
+     * sessions end up tied to a preview domain even when the user is on the custom domain,
+     * which can lead to confusing redirects and (in some cases) 403s on checkout.stripe.com.
+     *
+     * Order:
+     * - NEXT_PUBLIC_APP_URL (explicit canonical, recommended)
+     * - Origin header (best signal of current user-facing domain)
+     * - Host header (reconstruct https://<host>)
+     * - VERCEL_URL (fallback)
+     * - request URL origin (last resort)
+     */
+    const explicit = process.env.NEXT_PUBLIC_APP_URL || null;
+    const origin = request.headers.get("origin");
+    const host = request.headers.get("host");
+    const inferredFromHost = host ? `https://${host}` : null;
+    const vercel = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null;
+    const requestOrigin = request.url.split("/").slice(0, 3).join("/");
+
+    const baseUrl = explicit || origin || inferredFromHost || vercel || requestOrigin;
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: priceId, quantity: 1 }],
@@ -50,7 +67,10 @@ export async function POST(request: Request) {
     });
 
     if (session.url) {
-      return NextResponse.redirect(session.url);
+      // The pricing page submits a POST form to this route. A 307 redirect would
+      // preserve the method and attempt to POST to checkout.stripe.com, which Stripe rejects.
+      // Use 303 so the browser follows up with a GET to the Checkout URL.
+      return NextResponse.redirect(session.url, 303);
     }
     return NextResponse.json({ url: session.url });
   } catch (e) {

@@ -4,7 +4,7 @@ import { useCallback, useMemo, useState } from "react";
 import { CompanyCard } from "@/components/company-card";
 import { EmptyState } from "@/components/empty-state";
 import { FilterBar } from "@/components/filter-bar";
-import { getCompanyBadges } from "@/lib/badges";
+import { getCompanyBadgesForPlan } from "@/lib/badges";
 import type { ScoreComponents } from "@/types/database";
 import { saveCompany, unsaveCompany } from "./actions";
 
@@ -109,11 +109,11 @@ export function DashboardFeed({
         c.score_components_json,
         signalTypeFilter
       );
-      const badges = getCompanyBadges(c.score_components_json as ScoreComponents, { score: c.score });
+      const badges = getCompanyBadgesForPlan(c.score_components_json as ScoreComponents, { score: c.score, plan });
       const matchesBadge = !badgeFilter || badges.includes(badgeFilter as import("@/lib/badges").BadgeId);
       return matchesSearch && matchesSignal && matchesBadge;
     });
-  }, [initialFeed, searchQuery, signalTypeFilter, badgeFilter]);
+  }, [initialFeed, searchQuery, signalTypeFilter, badgeFilter, plan]);
 
   const summaryStats = useMemo(() => {
     const total = baseFiltered.length;
@@ -241,6 +241,7 @@ export function DashboardFeed({
         onBadgeChange={setBadgeFilter}
         sort={sort}
         onSortChange={(v) => setSort(v === "score" || v === "updated" ? v : "rank")}
+        plan={plan}
         className="mb-6"
       />
       {filteredFeed.length === 0 ? (
@@ -285,6 +286,7 @@ export function DashboardFeed({
                       isSaved={savedIds.has(company.id)}
                       onSave={handleSave}
                       onUnsave={handleUnsave}
+                      plan={plan}
                       compact
                     />
                   </div>
@@ -344,6 +346,7 @@ export function DashboardFeed({
                     isSaved={savedIds.has(company.id)}
                     onSave={handleSave}
                     onUnsave={handleUnsave}
+                    plan={plan}
                   />
                 </li>
               ))}

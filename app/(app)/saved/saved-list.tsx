@@ -19,7 +19,7 @@ interface CompanyRow {
   score_components_json: Record<string, unknown>;
 }
 
-export function SavedList({ initialCompanies }: { initialCompanies: CompanyRow[] }) {
+export function SavedList({ initialCompanies, plan = "free" }: { initialCompanies: CompanyRow[]; plan?: import("@/types/database").Plan }) {
   const [companies, setCompanies] = useState(initialCompanies);
 
   const handleUnsave = useCallback(async (companyId: string) => {
@@ -56,6 +56,7 @@ export function SavedList({ initialCompanies }: { initialCompanies: CompanyRow[]
             isSaved={true}
             onSave={() => {}}
             onUnsave={handleUnsave}
+            plan={plan}
           />
         </li>
       ))}

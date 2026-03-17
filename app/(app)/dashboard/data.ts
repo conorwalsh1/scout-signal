@@ -9,7 +9,7 @@ import { isAdmin } from "@/lib/auth/admin";
 import { feedLimit, savedLimit, type Plan } from "@/lib/plan-gating";
 import { dedupeCompaniesByName, filterLiveCompanies, sortCompaniesForDisplay } from "@/lib/company-selection";
 import { filterLaunchReadyCompanies } from "@/lib/beta-readiness";
-import { getCompanyBadges } from "@/lib/badges";
+import { PRO_ONLY_BADGES, getCompanyBadgesForPlan } from "@/lib/badges";
 import type { BadgeId } from "@/lib/badges";
 import type { ScoreComponents } from "@/types/database";
 
@@ -243,6 +243,9 @@ export async function getCompaniesList(options?: {
   const plan = user ? await getUserPlan(supabase, user.id) : "free";
   const cappedLimit = isAdmin(user?.email) ? ADMIN_FEED_LIMIT : feedLimit(plan);
   const sort = options?.sort ?? "rank";
+  if (options?.badge && plan !== "pro" && PRO_ONLY_BADGES.includes(options.badge)) {
+    return { companies: [], plan };
+  }
 
   if (sort === "rank") {
     const service = createServiceClient();
@@ -318,8 +321,9 @@ export async function getCompaniesList(options?: {
     // will appear to start at #4, #5, #6, etc. instead of #1, #2, #3….
     let out = withScores.slice(0, cappedLimit);
     if (options?.badge) {
+      const badge = options.badge;
       out = out.filter((c) =>
-        getCompanyBadges(c.score_components_json as ScoreComponents, { score: c.score }).includes(options.badge!)
+        getCompanyBadgesForPlan(c.score_components_json as ScoreComponents, { score: c.score, plan }).includes(badge)
       );
     }
     return { companies: out, plan };
@@ -375,8 +379,9 @@ export async function getCompaniesList(options?: {
 
   let list = filterLaunchReadyCompanies(filterLiveCompanies(withScores));
   if (options?.badge) {
+    const badge = options.badge;
     list = list.filter((c) =>
-      getCompanyBadges(c.score_components_json as ScoreComponents, { score: c.score }).includes(options.badge!)
+      getCompanyBadgesForPlan(c.score_components_json as ScoreComponents, { score: c.score, plan }).includes(badge)
     );
   }
   const deduped = dedupeCompaniesByName(list);

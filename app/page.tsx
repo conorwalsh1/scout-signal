@@ -9,6 +9,9 @@ import {
 import { LandingHeroWithRadar } from "@/components/landing/landing-hero-with-radar";
 import { LandingBadges } from "@/components/landing/landing-badges";
 import { LandingCompanyCard } from "@/components/landing/landing-company-card";
+import { CompanyLogo } from "@/components/company-logo";
+import { CompanyBadge } from "@/components/company-badge";
+import { getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
 
 export const dynamic = "force-dynamic";
 
@@ -133,21 +136,45 @@ export default async function HomePage() {
           <h2 className="text-2xl font-bold text-foreground-heading">Top ranked companies</h2>
           <div className="mt-8 overflow-hidden rounded-xl border border-border bg-card">
             {topScoreCompanies.length > 0 ? (
-              topScoreCompanies.map((company, index) => (
-                <div
-                  key={company.id}
-                  className="flex items-center justify-between border-b border-border/60 px-5 py-4 last:border-b-0"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
-                    <p className="mt-1 text-xs text-signal-green">
-                      Signal Score {(company.score / 10).toFixed(1)} · {company.latest_signal_label}
-                    </p>
-                    <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
+              topScoreCompanies.map((company, index) => {
+                const badgeIds = pickDisplayBadges(
+                  getCompanyBadgesForPlan(company.score_components_json, { score: company.score, plan: "free" }),
+                  3
+                );
+                const scoreOutOf10 = (company.score / 10).toFixed(1);
+                return (
+                  <div
+                    key={company.id}
+                    className="flex items-center justify-between border-b border-border/60 px-5 py-4 last:border-b-0"
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border bg-sidebar flex items-center justify-center">
+                        <CompanyLogo
+                          name={company.name}
+                          website={company.website}
+                          domain={company.domain}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
+                        <p className="mt-1 text-xs text-signal-green">
+                          Signal Score {scoreOutOf10} · {company.latest_signal_label}
+                        </p>
+                        <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
+                        {badgeIds.length > 0 && (
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {badgeIds.map((bid) => (
+                              <CompanyBadge key={bid} badgeId={bid} />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    <div className="pl-4 text-sm font-semibold text-muted-foreground">#{index + 1}</div>
                   </div>
-                  <div className="pl-4 text-sm font-semibold text-muted-foreground">#{index + 1}</div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="px-5 py-10 text-center text-sm text-muted-foreground">
                 Sign in to see the full ranked dashboard.

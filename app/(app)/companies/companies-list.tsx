@@ -97,6 +97,7 @@ export function CompaniesList({
               isSaved={savedIds.has(company.id)}
               onSave={handleSave}
               onUnsave={handleUnsave}
+              plan={plan}
             />
           </li>
         ))}

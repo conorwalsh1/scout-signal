@@ -1,12 +1,16 @@
 import Link from "next/link";
 import type { LandingCompanyPreview } from "@/lib/landing-data";
 import { CompanyBadge } from "@/components/company-badge";
-import { getCompanyBadges } from "@/lib/badges";
+import { getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
 import { CompanyLogo } from "@/components/company-logo";
+import type { Plan } from "@/types/database";
 
-export function LandingCompanyCard({ company }: { company: LandingCompanyPreview }) {
+export function LandingCompanyCard({ company, plan = "free" }: { company: LandingCompanyPreview; plan?: Plan }) {
   const scoreOutOf10 = (company.score / 10).toFixed(1);
-  const badgeIds = getCompanyBadges(company.score_components_json, { score: company.score });
+  const badgeIds = pickDisplayBadges(
+    getCompanyBadgesForPlan(company.score_components_json, { score: company.score, plan }),
+    3
+  );
 
   return (
     <Link
@@ -30,7 +34,7 @@ export function LandingCompanyCard({ company }: { company: LandingCompanyPreview
           </p>
           {badgeIds.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
-              {badgeIds.slice(0, 2).map((bid) => (
+              {badgeIds.map((bid) => (
                 <CompanyBadge key={bid} badgeId={bid} />
               ))}
             </div>

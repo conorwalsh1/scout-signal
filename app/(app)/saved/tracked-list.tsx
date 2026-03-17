@@ -6,12 +6,12 @@ import { getLatestSignalLabel } from "@/lib/signal-engine/explanations";
 import { getCompanySiteUrl } from "@/lib/company-web";
 import { ScoreBadge } from "@/components/score-badge";
 import { CompanyBadge } from "@/components/company-badge";
-import { getCompanyBadges } from "@/lib/badges";
+import { getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
 import { CompanyLogo } from "@/components/company-logo";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import { unsaveCompany } from "../dashboard/actions";
-import type { ScoreComponents } from "@/types/database";
+import type { Plan, ScoreComponents } from "@/types/database";
 
 interface TrackedRow {
   id: string;
@@ -34,7 +34,13 @@ function IconBookmark({ className, filled }: { className?: string; filled?: bool
   );
 }
 
-export function TrackedCompaniesList({ initialCompanies }: { initialCompanies: TrackedRow[] }) {
+export function TrackedCompaniesList({
+  initialCompanies,
+  plan = "free",
+}: {
+  initialCompanies: TrackedRow[];
+  plan?: Plan;
+}) {
   const [companies, setCompanies] = useState(initialCompanies);
 
   const handleUntrack = useCallback(async (companyId: string) => {
@@ -78,7 +84,7 @@ export function TrackedCompaniesList({ initialCompanies }: { initialCompanies: T
             {companies.map((company) => {
               const comp = company.score_components_json as ScoreComponents;
               const latestSignal = getLatestSignalLabel(comp);
-              const badgeIds = getCompanyBadges(comp, { score: company.score });
+              const badgeIds = pickDisplayBadges(getCompanyBadgesForPlan(comp, { score: company.score, plan }), 3);
               const siteUrl = getCompanySiteUrl({ website: company.website, domain: company.domain });
               return (
                 <tr
@@ -107,7 +113,7 @@ export function TrackedCompaniesList({ initialCompanies }: { initialCompanies: T
                     <span className="text-foreground">{latestSignal}</span>
                     {badgeIds.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-1">
-                        {badgeIds.slice(0, 3).map((bid) => (
+                        {badgeIds.map((bid) => (
                           <CompanyBadge key={bid} badgeId={bid} />
                         ))}
                       </div>

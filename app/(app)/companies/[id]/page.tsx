@@ -14,9 +14,10 @@ import { CompanyPageHeader } from "./company-page-header";
 import { DashboardCard } from "@/components/company-detail/dashboard-card";
 import { HiringActivityChart, type HiringActivityPoint } from "@/components/company-detail/hiring-activity-chart";
 import { buildScoreExplanation, getWhyThisMatters, getScoreBreakdown } from "@/lib/signal-engine/explanations";
-import { BADGES, getCompanyBadges } from "@/lib/badges";
+import { BADGES, getCompanyBadgesForPlan } from "@/lib/badges";
 import { CompanyBadge } from "@/components/company-badge";
-import type { ScoreComponents } from "@/types/database";
+import type { Plan, ScoreComponents } from "@/types/database";
+import { createClient } from "@/lib/supabase/server";
 
 function scoreCategory(score: number): "LOW" | "MEDIUM" | "HIGH" {
   const outOf10 = score / 10;
@@ -38,6 +39,12 @@ export default async function CompanyDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = user
+    ? await supabase.from("users").select("plan").eq("id", user.id).single()
+    : { data: null };
+  const plan = (profile?.plan ?? "free") as Plan;
   const [company, signals, events, jobPostEvents30d, rankContext, saved, isAdmin, savedCount] = await Promise.all([
     getCompanyById(id),
     getCompanySignals(id),
@@ -55,7 +62,7 @@ export default async function CompanyDetailPage({
   const lines = buildScoreExplanation(comp);
   const whyThisMatters = getWhyThisMatters(comp);
   const scoreBreakdown = getScoreBreakdown(comp, company.score);
-  const companyBadgeIds = getCompanyBadges(comp, { score: company.score });
+  const companyBadgeIds = getCompanyBadgesForPlan(comp, { score: company.score, plan });
   const scoreOutOf10 = (company.score / 10).toFixed(1);
   const category = scoreCategory(company.score);
   const ft1000Source = company.company_sources?.find((s) => s.source_type === "ft1000");

@@ -23,17 +23,18 @@ export function ScoreBadge({
   return (
     <div
       className={cn(
-        "inline-flex flex-col gap-1.5 rounded-lg px-2.5 py-2 text-xs font-medium",
-        tier === "low" && "bg-muted/80 text-secondary",
-        tier === "medium" && "bg-[rgba(56,189,248,0.12)] text-data-blue",
-        tier === "high" && "bg-[rgba(34,197,94,0.12)] text-signal-green",
+        // Quieter, less dominant. Let insight + badges lead.
+        "inline-flex flex-col gap-1.5 rounded-lg px-2 py-1.5 text-[11px] font-medium",
+        tier === "low" && "bg-muted/60 text-secondary",
+        tier === "medium" && "bg-[rgba(56,189,248,0.08)] text-data-blue",
+        tier === "high" && "bg-[rgba(34,197,94,0.08)] text-signal-green",
         className
       )}
     >
       <div className="flex flex-col items-start gap-0.5">
         <span className="text-[10px] uppercase tracking-wider opacity-85">Signal Score</span>
-        <span className="font-mono text-base font-bold leading-none">
-          {outOf10.toFixed(1)} <span className="font-sans text-xs font-medium opacity-80">/ 10</span>
+        <span className="font-mono text-sm font-bold leading-none">
+          {outOf10.toFixed(1)} <span className="font-sans text-[11px] font-medium opacity-75">/ 10</span>
         </span>
         <span className="text-[10px] font-semibold uppercase tracking-wide opacity-95">
           {momentumLabel}
@@ -51,7 +52,7 @@ export function ScoreBadge({
             <div
               key={i}
               className={cn(
-                "h-1.5 flex-1 rounded-sm transition-colors",
+                "h-1 flex-1 rounded-sm transition-colors",
                 i < filledSegments
                   ? tier === "high"
                     ? "bg-signal-green"

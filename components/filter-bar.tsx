@@ -1,7 +1,8 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { BADGES } from "@/lib/badges";
+import { BADGES, PRO_ONLY_BADGES } from "@/lib/badges";
+import type { Plan } from "@/types/database";
 
 interface FilterBarProps {
   searchQuery: string;
@@ -12,6 +13,7 @@ interface FilterBarProps {
   onBadgeChange?: (value: string) => void;
   sort?: string;
   onSortChange?: (value: string) => void;
+  plan?: Plan;
   className?: string;
 }
 
@@ -24,8 +26,11 @@ export function FilterBar({
   onBadgeChange,
   sort = "rank",
   onSortChange,
+  plan = "free",
   className,
 }: FilterBarProps) {
+  const visibleBadges =
+    plan === "pro" ? BADGES : BADGES.filter((b) => !PRO_ONLY_BADGES.includes(b.id));
   return (
     <div
       className={cn(
@@ -65,7 +70,7 @@ export function FilterBar({
           aria-label="Filter by badge"
         >
           <option value="">All badges</option>
-          {BADGES.map((b) => (
+          {visibleBadges.map((b) => (
             <option key={b.id} value={b.id}>
               {b.label}
             </option>

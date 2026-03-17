@@ -1,5 +1,5 @@
 import { getCompaniesList, getSavedCompanyIds, getCompaniesCount } from "@/app/(app)/dashboard/data";
-import { BADGES } from "@/lib/badges";
+import { BADGES, PRO_ONLY_BADGES } from "@/lib/badges";
 import type { BadgeId } from "@/lib/badges";
 import { CompaniesList } from "./companies-list";
 
@@ -22,6 +22,8 @@ export default async function CompaniesPage(props: CompaniesPageProps) {
     getSavedCompanyIds(),
     getCompaniesCount(),
   ]);
+  const visibleBadges =
+    plan === "pro" ? BADGES : BADGES.filter((b) => !PRO_ONLY_BADGES.includes(b.id));
 
   return (
     <div>
@@ -49,7 +51,7 @@ export default async function CompaniesPage(props: CompaniesPageProps) {
           aria-label="Filter by badge"
         >
           <option value="">All badges</option>
-          {BADGES.map((b) => (
+          {visibleBadges.map((b) => (
             <option key={b.id} value={b.id}>{b.label}</option>
           ))}
         </select>

@@ -33,6 +33,18 @@ export default async function PricingPage() {
         <p className="text-secondary mb-10">
           Start free, then upgrade when you need deeper coverage and automation.
         </p>
+        <div className="mb-8 rounded-xl border border-border bg-card/60 px-4 py-3 text-sm text-secondary">
+          {user ? (
+            <span>
+              You&apos;re signed in. Choosing <span className="font-medium text-foreground">Basic</span> or{" "}
+              <span className="font-medium text-foreground">Pro</span> will send you to Stripe Checkout.
+            </span>
+          ) : (
+            <span>
+              Create your account first, then return here to start Stripe Checkout for a paid plan.
+            </span>
+          )}
+        </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           {/* Free */}
@@ -99,7 +111,7 @@ export default async function PricingPage() {
               ) : (
                 <Link href="/signup">
                   <span className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">
-                    Sign up for Basic
+                    Sign up to choose Basic
                   </span>
                 </Link>
               )}
@@ -134,7 +146,7 @@ export default async function PricingPage() {
               ) : (
                 <Link href="/signup">
                   <span className="inline-flex h-10 w-full items-center justify-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90">
-                    Get Pro
+                    Sign up to get Pro
                   </span>
                 </Link>
               )}
