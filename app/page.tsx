@@ -157,6 +157,14 @@ export default async function HomePage() {
           <Link href="/pricing" className="hover:text-foreground no-underline">Pricing</Link>
           <Link href="/login" className="hover:text-foreground no-underline">Log in</Link>
           <Link href="/signup" className="hover:text-foreground no-underline">Sign up</Link>
+          <Link
+            href="https://www.linkedin.com/in/scout-signal-1b78a63b7/"
+            className="hover:text-foreground no-underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            LinkedIn
+          </Link>
         </div>
       </footer>
     </main>
@@ -208,12 +216,12 @@ function FlowConnector() {
   return (
     <>
       {/* Desktop: arrow connector between cards */}
-      <div className="hidden md:flex w-16 items-center justify-center">
+      <div className="hidden md:flex w-28 items-center justify-center">
         <div className="relative h-10 w-full">
           <div className="absolute left-1/2 top-1/2 h-px w-full -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-border via-signal-green/60 to-border" />
           {/* Travelling pulse */}
-          <div className="absolute left-0 top-1/2 h-2.5 w-2.5 rounded-full bg-signal-green/90 flow-pulse-dot" />
-          <div className="absolute left-0 top-1/2 h-5 w-5 rounded-full bg-signal-green/30 blur-md flow-pulse-dot" />
+          <div className="absolute left-0 top-1/2 z-10 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-signal-green/90 flow-pulse-dot" />
+          <div className="absolute left-0 top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-signal-green/30 blur-md flow-pulse-dot" />
         </div>
       </div>
 
