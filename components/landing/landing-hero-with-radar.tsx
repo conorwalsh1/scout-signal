@@ -24,13 +24,13 @@ export function LandingHeroWithRadar({
             </div>
             <div className="min-w-0 flex-1 text-center lg:order-1 lg:text-left">
               <p className="text-sm font-medium uppercase tracking-[0.22em] text-signal-green">
-                Hiring intelligence for early growth
+                For recruiters tracking too many accounts
               </p>
               <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground-heading sm:text-5xl lg:text-6xl">
-                Discover companies before they start scaling.
+                Cut through the noise. See what actually matters.
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-secondary lg:mx-0">
-                Real-time hiring intelligence that reveals which companies are about to grow.
+                Track multiple accounts without overload. Focus on the right opportunities.
               </p>
               <p className="mt-4 text-sm text-muted-foreground">
                 Tracking <span className="font-semibold text-signal-green">{displayCount}</span> companies.
@@ -42,13 +42,13 @@ export function LandingHeroWithRadar({
                   href="/signup"
                   className="inline-flex justify-center rounded-lg bg-signal-green px-6 py-3.5 text-base font-semibold text-black no-underline hover:bg-signal-green/90"
                 >
-                  Create free account
+                  Start free
                 </Link>
                 <Link
                   href="/login"
                   className="inline-flex justify-center rounded-lg border border-border px-6 py-3.5 text-base font-semibold text-foreground no-underline hover:bg-card"
                 >
-                  View live signals
+                  See what actually matters
                 </Link>
               </div>
             </div>

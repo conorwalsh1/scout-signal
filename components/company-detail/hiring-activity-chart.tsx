@@ -52,22 +52,18 @@ export function HiringActivityChart({ points, className, variant = "full" }: Hir
                 </span>
               )}
               <div
-                className="w-full rounded-t-sm border border-signal-green/25 bg-gradient-to-t from-signal-green/45 to-signal-green/95 transition-all duration-200 group-hover:from-signal-green/25 group-hover:to-signal-green"
+                className="w-full rounded-t-sm bg-gradient-to-t from-signal-green/60 to-signal-green transition-all duration-200 group-hover:from-signal-green/40 group-hover:to-signal-green"
                 style={{ height: `${finalHeightPx}px` }}
               />
+              {variant === "full" && (
+                <span className="text-[9px] text-secondary tabular-nums opacity-80">
+                  {p.label}
+                </span>
+              )}
             </div>
           );
         })}
       </div>
-      {variant === "full" && (
-        <div className="flex justify-between text-[10px] text-secondary">
-          {points.map((p, idx) => (
-            <span key={p.label} className={idx === 0 || idx === points.length - 1 ? "" : "hidden sm:inline"}>
-              {p.label}
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

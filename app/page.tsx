@@ -47,13 +47,13 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl">
           <div className="max-w-3xl">
             <p className="text-sm font-medium uppercase tracking-[0.22em] text-signal-green">
-              Hiring intelligence for early growth
+              For recruiters tracking too many accounts
             </p>
             <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground-heading sm:text-5xl lg:text-6xl">
-              Discover companies before they start scaling.
+              Cut through the noise. See what actually matters.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-secondary">
-              Real-time hiring intelligence that reveals which companies are about to grow.
+              Track 30–50 companies without overload. Get the few signals worth acting on.
             </p>
             <p className="mt-4 text-sm text-muted-foreground">
               Tracking <span className="font-semibold text-signal-green">{displayCount}</span> companies.
@@ -65,13 +65,13 @@ export default async function HomePage() {
                 href="/signup"
                 className="inline-flex justify-center rounded-lg bg-signal-green px-6 py-3.5 text-base font-semibold text-black no-underline hover:bg-signal-green/90"
               >
-                Create free account
+                Start free
               </Link>
               <Link
                 href="/login"
                 className="inline-flex justify-center rounded-lg border border-border px-6 py-3.5 text-base font-semibold text-foreground no-underline hover:bg-card"
               >
-                View live signals
+                See what actually matters
               </Link>
             </div>
           </div>
@@ -81,16 +81,16 @@ export default async function HomePage() {
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
           <InfoCard
-            title="Detect"
-            body="Monitor company hiring activity, leadership shifts, and growth signals before they become obvious."
+            title="Track"
+            body="Keep tabs on multiple accounts without overload. One place for the signals you’d otherwise miss."
           />
           <InfoCard
-            title="Score"
-            body="Rank companies by hiring momentum and signal quality so the strongest opportunities surface first."
+            title="Prioritise"
+            body="See what’s worth acting on. Rank changes and hiring momentum so you focus on the right opportunities."
           />
           <InfoCard
             title="Act"
-            body="Use the leaderboard and company intelligence pages to prioritise outreach and market research."
+            body="Know what changed, when it changed, and where it came from — then reach out at the right time."
           />
         </div>
       </section>
@@ -99,14 +99,14 @@ export default async function HomePage() {
         <div className="mx-auto max-w-6xl">
           <h2 className="text-2xl font-bold text-foreground-heading">Signals we detect</h2>
           <p className="mt-2 text-sm text-secondary">
-            Hiring momentum, engineering buildout, AI hiring, funding activity, and leadership change.
+            Hiring signals from credible public hiring infrastructure — plus context when it’s useful.
           </p>
         </div>
       </section>
 
       <section className="border-t border-border/50 bg-card/30 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-bold text-foreground-heading">Latest signals detected</h2>
+          <h2 className="text-2xl font-bold text-foreground-heading">What changed today</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {latestCompanies.length > 0 ? (
               latestCompanies.map((company) => (
@@ -151,7 +151,7 @@ export default async function HomePage() {
 
       <section className="border-t border-border/50 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-bold text-foreground-heading">Top ranked companies</h2>
+          <h2 className="text-2xl font-bold text-foreground-heading">Focus list (highest signal)</h2>
           <div className="mt-8 overflow-hidden rounded-xl border border-border bg-card">
             {topScoreCompanies.length > 0 ? (
               topScoreCompanies.map((company, index) => (
@@ -171,7 +171,7 @@ export default async function HomePage() {
               ))
             ) : (
               <div className="px-5 py-10 text-center text-sm text-muted-foreground">
-                Sign in to see the full ranked dashboard.
+                Sign in to see the live focus list.
               </div>
             )}
           </div>

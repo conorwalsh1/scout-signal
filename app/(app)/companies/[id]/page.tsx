@@ -215,14 +215,20 @@ export default async function CompanyDetailPage({
       const key = d.toISOString().slice(0, 10);
       counts.set(key, (counts.get(key) ?? 0) + 1);
     }
-    const entries = Array.from(counts.entries())
-      .sort(([a], [b]) => (a < b ? -1 : 1))
-      .slice(-10);
-    return entries.map(([date, count]) => {
-      const d = new Date(date);
-      const label = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
-      return { label, count };
-    });
+    // Build a stable 30-day window so the chart always has 30 bars (labels 1–30).
+    const days: string[] = [];
+    const start = new Date();
+    start.setUTCHours(0, 0, 0, 0);
+    start.setUTCDate(start.getUTCDate() - 29);
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(start);
+      d.setUTCDate(start.getUTCDate() + i);
+      days.push(d.toISOString().slice(0, 10));
+    }
+    return days.map((day, idx) => ({
+      label: String(idx + 1),
+      count: counts.get(day) ?? 0,
+    }));
   })();
 
   const primaryBadgeLabel =

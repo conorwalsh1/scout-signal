@@ -10,7 +10,7 @@ export function LandingBadges() {
       <div className="mx-auto max-w-6xl">
         <h2 className="text-2xl font-bold text-foreground-heading">Signals we detect</h2>
         <p className="mt-2 text-sm text-secondary">
-          Click a badge to see companies with that signal in the leaderboard.
+          Click a signal to see who’s worth acting on right now.
         </p>
         <div className="mt-6 flex flex-wrap gap-2">
           {(BADGES as readonly { id: BadgeId; label: string }[]).map((b) => (
