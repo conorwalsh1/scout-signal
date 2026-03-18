@@ -68,6 +68,15 @@ function IconLogOut({ className }: { className?: string }) {
   );
 }
 
+function IconTag({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M20.59 13.41 11 3H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82z" />
+      <circle cx="7.5" cy="7.5" r="1.5" />
+    </svg>
+  );
+}
+
 const nav = [
   { href: "/dashboard", label: "Dashboard", icon: IconDashboard },
   { href: "/companies", label: "Companies", icon: IconBuilding },
@@ -88,6 +97,7 @@ export function AppNav() {
             <Link
               key={href}
               href={href}
+              title={label}
               className={`flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium no-underline-hover border-l-2 ${
                 isActive
                   ? "bg-[rgba(34,197,94,0.08)] text-foreground border-signal-green"
@@ -95,24 +105,34 @@ export function AppNav() {
               }`}
             >
               <Icon className="h-4 w-4 shrink-0" />
-              {label}
+              <span className="hidden group-hover/sidebar:inline group-focus-within/sidebar:inline group-data-[pinned=true]/sidebar:inline">
+                {label}
+              </span>
             </Link>
           );
         })}
       </nav>
       <div className="p-2 border-t border-sidebar-border space-y-1">
-        <Link href="/pricing" className="no-underline-hover">
-          <span className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-secondary hover:bg-muted hover:text-foreground border-l-2 border-transparent">
+        <Link
+          href="/pricing"
+          className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-secondary hover:bg-muted hover:text-foreground border-l-2 border-transparent no-underline-hover"
+          title="Pricing"
+        >
+          <IconTag className="h-4 w-4 shrink-0" />
+          <span className="hidden group-hover/sidebar:inline group-focus-within/sidebar:inline group-data-[pinned=true]/sidebar:inline">
             Pricing
           </span>
         </Link>
         <form action="/api/auth/signout" method="post">
           <button
             type="submit"
+            title="Log out"
             className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-secondary hover:bg-muted hover:text-foreground w-full text-left border-l-2 border-transparent"
           >
             <IconLogOut className="h-4 w-4 shrink-0" />
-            Log out
+            <span className="hidden group-hover/sidebar:inline group-focus-within/sidebar:inline group-data-[pinned=true]/sidebar:inline">
+              Log out
+            </span>
           </button>
         </form>
       </div>

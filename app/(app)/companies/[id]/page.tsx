@@ -312,19 +312,33 @@ export default async function CompanyDetailPage({
               <>
                 <p className="mt-3 text-[11px] font-semibold uppercase tracking-wide text-secondary">Key signals</p>
                 <ul className="mt-1 list-disc list-inside space-y-1 text-sm text-foreground">
-                  {lines.slice(0, 3).map((line, i) => (
+                  {lines.slice(0, 2).map((line, i) => (
                     <li key={i}>{line}</li>
                   ))}
                 </ul>
+                {lines.length > 2 && (
+                  <details className="mt-2">
+                    <summary className="cursor-pointer select-none text-xs font-medium text-secondary hover:text-foreground">
+                      Show more signals
+                    </summary>
+                    <ul className="mt-2 list-disc list-inside space-y-1 text-sm text-foreground">
+                      {lines.slice(2, 8).map((line, i) => (
+                        <li key={`more-${i}`}>{line}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
               </>
             )}
             {hiringPoints.length > 0 && (
-              <div className="mt-4 border-t border-border pt-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary mb-1">
+              <details className="mt-4 border-t border-border pt-3">
+                <summary className="cursor-pointer select-none text-[11px] font-semibold uppercase tracking-wide text-secondary hover:text-foreground">
                   Hiring velocity (last 30 days)
-                </p>
-                <HiringActivityChart points={hiringPoints} variant="sparkline" />
-              </div>
+                </summary>
+                <div className="mt-2">
+                  <HiringActivityChart points={hiringPoints} variant="sparkline" />
+                </div>
+              </details>
             )}
             <div className="mt-4 border-t border-border pt-3 text-xs text-secondary">
               <p className="font-semibold text-[11px] uppercase tracking-wide mb-1">Confidence</p>
@@ -334,7 +348,7 @@ export default async function CompanyDetailPage({
             </div>
           </DashboardCard>
         </div>
-        <div className="md:col-span-4">
+        <div className="md:col-span-4 md:sticky md:top-6 self-start">
           <DashboardCard title="Company overview">
             <dl className="space-y-3 text-sm">
               {ftRank != null && (
@@ -400,11 +414,13 @@ export default async function CompanyDetailPage({
                 </div>
               )}
             </dl>
-            <div className="mt-4 border-t border-border pt-3">
-              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-secondary">
+            <details className="mt-4 border-t border-border pt-3">
+              <summary className="cursor-pointer select-none text-[11px] font-semibold uppercase tracking-wide text-secondary hover:text-foreground">
                 Hiring activity (last 30 days)
-              </p>
-              <HiringActivityChart points={hiringPoints} />
+              </summary>
+              <div className="mt-2">
+                <HiringActivityChart points={hiringPoints} />
+              </div>
               <dl className="mt-3 space-y-2 text-xs text-secondary">
                 <div className="flex items-center justify-between gap-3">
                   <dt>Engineering roles</dt>
@@ -436,7 +452,7 @@ export default async function CompanyDetailPage({
                   </dd>
                 </div>
               </dl>
-            </div>
+            </details>
           </DashboardCard>
         </div>
       </div>
@@ -467,24 +483,26 @@ export default async function CompanyDetailPage({
                 </p>
               )}
               {scoreBreakdown.length > 0 && (
-                <div className="border-t border-border pt-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary mb-1">Score components</p>
-                  <ul className="space-y-1 text-sm">
-                    {scoreBreakdown.slice(0, 3).map((row) => (
+                <details className="border-t border-border pt-3">
+                  <summary className="cursor-pointer select-none text-[11px] font-semibold uppercase tracking-wide text-secondary hover:text-foreground">
+                    Score components
+                  </summary>
+                  <ul className="mt-2 space-y-1 text-sm">
+                    {scoreBreakdown.slice(0, 6).map((row) => (
                       <li key={row.key} className="flex justify-between gap-2">
                         <span className="text-foreground">{row.label}</span>
                         <span className="font-mono font-medium text-signal-green/90">+{row.points.toFixed(1)}</span>
                       </li>
                     ))}
                   </ul>
-                </div>
+                </details>
               )}
-              <div className="border-t border-border pt-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary mb-1">
-                  Recent signals
-                </p>
-                <ul className="space-y-1 text-xs text-foreground">
-                  {timelineByDate.slice(0, 3).map((entry) => (
+              <details className="border-t border-border pt-3">
+                <summary className="cursor-pointer select-none text-[11px] font-semibold uppercase tracking-wide text-secondary hover:text-foreground">
+                  Recent signals (verify sources)
+                </summary>
+                <ul className="mt-2 space-y-1 text-xs text-foreground">
+                  {timelineByDate.slice(0, 8).map((entry) => (
                     <li key={entry.key} className="flex gap-2">
                       <span className="shrink-0 text-secondary w-16">{entry.date}</span>
                       <span className="flex-1">
@@ -510,7 +528,7 @@ export default async function CompanyDetailPage({
                     </li>
                   ))}
                 </ul>
-              </div>
+              </details>
             </div>
           </DashboardCard>
         </div>

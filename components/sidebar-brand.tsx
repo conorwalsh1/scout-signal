@@ -10,7 +10,7 @@ export function SidebarBrand() {
   return (
     <Link
       href="/dashboard"
-      className="flex items-center gap-3 font-semibold text-foreground-heading no-underline-hover w-full"
+      className="flex items-center justify-center gap-3 font-semibold text-foreground-heading no-underline-hover w-full group-hover/sidebar:justify-start group-focus-within/sidebar:justify-start group-data-[pinned=true]/sidebar:justify-start"
       aria-label="ScoutSignal – Dashboard"
     >
       <div className="relative h-6 w-6 flex items-center justify-center">
@@ -25,7 +25,9 @@ export function SidebarBrand() {
         />
         <div className="relative h-2 w-2 rounded-full bg-[var(--signal-green)]" />
       </div>
-      <span className="text-sm tracking-wide">ScoutSignal</span>
+      <span className="text-sm tracking-wide hidden group-hover/sidebar:inline group-focus-within/sidebar:inline group-data-[pinned=true]/sidebar:inline">
+        ScoutSignal
+      </span>
     </Link>
   );
 }

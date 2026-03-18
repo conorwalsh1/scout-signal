@@ -46,20 +46,10 @@ export function HiringActivityChart({ points, className, variant = "full" }: Hir
           const finalHeightPx = Math.max(minPx, heightPx);
           return (
             <div key={p.label} className="flex-1 flex flex-col items-center gap-1">
-              {variant === "full" && (
-                <span className="text-[10px] text-secondary tabular-nums opacity-90">
-                  {p.count}
-                </span>
-              )}
               <div
                 className="w-full rounded-t-sm bg-gradient-to-t from-signal-green/60 to-signal-green transition-all duration-200 group-hover:from-signal-green/40 group-hover:to-signal-green"
                 style={{ height: `${finalHeightPx}px` }}
               />
-              {variant === "full" && (
-                <span className="text-[9px] text-secondary tabular-nums opacity-80">
-                  {p.label}
-                </span>
-              )}
             </div>
           );
         })}
