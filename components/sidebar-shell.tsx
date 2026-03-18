@@ -73,7 +73,9 @@ export function SidebarShell({
         <div
           className={cn(
             "relative border-b border-sidebar-border flex items-center justify-center",
-            hydrated && !pinned ? "px-3 py-3 group-hover/sidebar:px-4 group-focus-within/sidebar:px-4" : "p-4"
+            // Keep header padding consistent with nav (nav uses p-2 + items use px-3).
+            // Brand handles its own inner padding when expanded.
+            "p-2"
           )}
         >
           <div className="min-w-0">{brand}</div>

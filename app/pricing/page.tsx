@@ -123,12 +123,12 @@ export default async function PricingPage() {
           </div>
           {/* Pro */}
           <div
-            className="rounded-xl border-2 border-signal-green/70 bg-card p-6 md:p-8 flex flex-col min-h-[220px]"
+            className="relative rounded-xl border-2 border-signal-green/70 bg-card p-6 md:p-8 flex flex-col min-h-[220px]"
             style={{
               boxShadow: "0 0 32px rgba(34, 197, 94, 0.18), 0 0 0 1px rgba(34, 197, 94, 0.25)",
             }}
           >
-            <span className="mb-3 inline-flex w-fit px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-signal-green/25 text-signal-green border border-signal-green/50">
+            <span className="absolute right-4 top-4 inline-flex w-fit px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-signal-green/25 text-signal-green border border-signal-green/50">
               Recommended
             </span>
             <h2 className="text-xl font-semibold text-foreground-heading">Pro</h2>
