@@ -19,16 +19,32 @@ export function HiringActivityChart({ points, className, variant = "full" }: Hir
   }
 
   const max = Math.max(...points.map((p) => p.count), 1);
+  const total = points.reduce((a, p) => a + (Number.isFinite(p.count) ? p.count : 0), 0);
+  const activeDays = points.filter((p) => p.count > 0).length;
 
   return (
     <div className={cn("space-y-2 group", className)}>
+      {variant === "full" && (
+        <div className="flex items-center justify-between text-[11px] text-secondary">
+          <span>
+            <span className="text-foreground font-medium">{total}</span> post{total === 1 ? "" : "s"}
+            {activeDays > 0 ? <span className="opacity-80"> · {activeDays} day{activeDays === 1 ? "" : "s"}</span> : null}
+          </span>
+          <span className="hidden sm:inline opacity-80">Last 30 days</span>
+        </div>
+      )}
       <div className={cn("flex items-end gap-1.5", variant === "sparkline" ? "h-12" : "h-20")}>
         {points.map((p) => {
           const height = (p.count / max) * 100;
           return (
             <div key={p.label} className="flex-1 flex flex-col items-center gap-1">
+              {variant === "full" && (
+                <span className="text-[10px] text-secondary tabular-nums opacity-90">
+                  {p.count}
+                </span>
+              )}
               <div
-                className="w-full rounded-t-sm bg-gradient-to-t from-signal-green/40 to-signal-green transition-all duration-200 group-hover:from-signal-green/20 group-hover:to-signal-green/90"
+                className="w-full rounded-t-sm border border-signal-green/25 bg-gradient-to-t from-signal-green/45 to-signal-green/95 transition-all duration-200 group-hover:from-signal-green/25 group-hover:to-signal-green"
                 style={{ height: `${height || 8}%` }}
               />
             </div>
