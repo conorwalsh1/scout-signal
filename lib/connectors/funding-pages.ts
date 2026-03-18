@@ -80,7 +80,7 @@ export const fundingPagesConnector: SourceConnector = {
             if (!candidates.has(absoluteUrl)) candidates.set(absoluteUrl, text);
           });
 
-          for (const [candidateUrl, text] of candidates) {
+          for (const [candidateUrl, text] of Array.from(candidates.entries())) {
             const fundingRoundType = detectFundingRoundType(text);
             const { amount, currency } = extractFundingAmount(text);
             const investors = extractLeadInvestors(text);
