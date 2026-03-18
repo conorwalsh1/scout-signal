@@ -11,7 +11,7 @@ import {
 
 const FUNDING_PATHS = ["/press", "/news", "/newsroom", "/blog", "/press-releases"];
 const FUNDING_HINT_RE = /\b(raises?|raised|secures?|secured|announces? funding|series\s+[a-f]|pre-seed|seed round|growth round|strategic investment)\b/i;
-const DEFAULT_SCAN_LIMIT = 60;
+const DEFAULT_SCAN_LIMIT = 12;
 
 function normalizeBaseUrl(sourceUrl: string | null, companyDomain: string | null): string | null {
   if (sourceUrl?.startsWith("http")) return sourceUrl.replace(/\/+$/, "");

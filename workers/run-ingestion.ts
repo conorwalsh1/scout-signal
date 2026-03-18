@@ -23,8 +23,11 @@ const CORE_CONNECTORS = [
   greenhouseHiringConnector,
   leverHiringConnector,
   ashbyHiringConnector,
-  fundingPagesConnector,
   fundingNewsConnector,
+];
+
+const HEAVY_CONNECTORS = [
+  fundingPagesConnector,
 ];
 
 const STATIC_CONNECTORS = [
@@ -160,7 +163,7 @@ export async function run(options?: { includeStaticConnectors?: boolean }) {
   const log = getLogger();
   const supabase = createServiceClient();
   const connectors = options?.includeStaticConnectors
-    ? [...CORE_CONNECTORS, ...STATIC_CONNECTORS]
+    ? [...CORE_CONNECTORS, ...HEAVY_CONNECTORS, ...STATIC_CONNECTORS]
     : CORE_CONNECTORS;
   const companies = await loadCompanies(supabase);
   let totalInserted = 0;
