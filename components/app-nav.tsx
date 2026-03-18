@@ -89,8 +89,8 @@ export function AppNav() {
   const pathname = usePathname();
 
   return (
-    <>
-      <nav className="p-2 flex-1 space-y-1">
+    <div className="flex min-h-0 flex-1 flex-col">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto p-2">
         {nav.map(({ href, label, icon: Icon }) => {
           const isActive = pathname === href;
           return (
@@ -112,7 +112,7 @@ export function AppNav() {
           );
         })}
       </nav>
-      <div className="p-2 border-t border-sidebar-border space-y-1">
+      <div className="shrink-0 space-y-1 border-t border-sidebar-border p-2">
         <Link
           href="/pricing"
           className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-secondary hover:bg-muted hover:text-foreground border-l-2 border-transparent no-underline-hover"
@@ -136,6 +136,6 @@ export function AppNav() {
           </button>
         </form>
       </div>
-    </>
+    </div>
   );
 }

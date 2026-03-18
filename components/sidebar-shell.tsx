@@ -53,7 +53,7 @@ export function SidebarShell({
 
   const asideClassName = useMemo(() => {
     const base =
-      "group/sidebar border-r border-sidebar-border flex flex-col bg-sidebar transition-[width] duration-200 ease-out";
+      "group/sidebar border-r border-sidebar-border flex flex-col bg-sidebar transition-[width] duration-200 ease-out sticky top-0 h-screen max-h-screen shrink-0";
     if (!hydrated) return cn(base, "w-56"); // avoid layout jank on first paint
     if (pinned) return cn(base, "w-56");
     return cn(base, "w-[68px] hover:w-56 focus-within:w-56");
@@ -72,13 +72,13 @@ export function SidebarShell({
       <aside className={asideClassName} data-pinned={pinned ? "true" : "false"}>
         <div
           className={cn(
-            "relative border-b border-sidebar-border flex items-center justify-center",
+            "relative border-b border-sidebar-border flex items-center justify-center group-hover/sidebar:justify-start group-focus-within/sidebar:justify-start group-data-[pinned=true]/sidebar:justify-start",
             // Keep header padding consistent with nav (nav uses p-2 + items use px-3).
             // Brand handles its own inner padding when expanded.
             "p-2"
           )}
         >
-          <div className="min-w-0">{brand}</div>
+          <div className="min-w-0 w-full">{brand}</div>
           <button
             type="button"
             className={pinButtonClassName}
@@ -100,7 +100,7 @@ export function SidebarShell({
             <IconPin className={pinned ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={pinned} />
           </button>
         </div>
-        {nav}
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{nav}</div>
       </aside>
       <main className="flex-1 p-6">{children}</main>
     </div>
