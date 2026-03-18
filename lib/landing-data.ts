@@ -141,6 +141,66 @@ export async function getLatestSignalCompanies(limit = 3): Promise<LandingCompan
   }
 }
 
+/** One row for LinkedIn / newsletter “top N by rank” posts. */
+export type WeeklyRankRow = {
+  rank: number;
+  name: string;
+  /** Display score 0–10 to match app UI */
+  scoreOutOf10: string;
+  signal: string;
+  insight: string;
+};
+
+/**
+ * Top N companies by global signal rank (rank_position ascending).
+ * Run scoring worker first so ranks are fresh.
+ */
+export async function getTopRankedForWeeklyPost(limit = 25): Promise<WeeklyRankRow[]> {
+  try {
+    const supabase = createServiceClient();
+    const { data: scoreRows } = await supabase
+      .from("company_scores")
+      .select("company_id, score, rank_position, score_components_json")
+      .not("rank_position", "is", null)
+      .order("rank_position", { ascending: true })
+      .limit(limit);
+    if (!scoreRows?.length) return [];
+    const ids = scoreRows.map((r) => r.company_id);
+    const { data: companies } = await supabase
+      .from("companies")
+      .select("id, name")
+      .in("id", ids);
+    const companyMap = new Map((companies ?? []).map((c) => [c.id, c.name ?? ""]));
+    const out: WeeklyRankRow[] = [];
+    for (const row of scoreRows) {
+      const name = companyMap.get(row.company_id);
+      if (!name) continue;
+      const rank = typeof row.rank_position === "number" ? row.rank_position : out.length + 1;
+      const comp = (row.score_components_json ?? {}) as ScoreComponents;
+      const signal = getLatestSignalLabel(comp);
+      const jobs = comp.job_posts ?? 0;
+      let insight = "";
+      if (comp.hiring_spike && jobs > 0) insight = `${jobs} roles posted this week`;
+      else if (comp.hiring_spike) insight = "Multiple new roles in a short window";
+      else if (comp.funding_event)
+        insight = `${formatFundingRoundType(comp.funding_round_type as string | null | undefined) ?? "Funding"} signal`;
+      else if (jobs > 0) insight = `${jobs} role${jobs !== 1 ? "s" : ""} posted recently`;
+      else if (comp.ft1000_listed) insight = "FT1000 listed";
+      else insight = "Hiring / growth activity";
+      out.push({
+        rank,
+        name,
+        scoreOutOf10: (row.score / 10).toFixed(1),
+        signal,
+        insight,
+      });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
+
 /** For radar labels: recent signals (company name + signal type). */
 export type RadarSignalLabel = { companyName: string; signalType: string };
 

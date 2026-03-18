@@ -204,7 +204,7 @@ function FlowStep({
             <p className="mt-3 text-sm leading-relaxed text-secondary">{body}</p>
           </div>
         </div>
-        <div className="shrink-0 rounded-full border border-border bg-background px-2 py-1 text-xs font-semibold text-muted-foreground">
+        <div className="shrink-0 rounded-full border border-signal-green/40 bg-[rgba(34,197,94,0.08)] px-2 py-1 text-xs font-semibold text-signal-green">
           {step}
         </div>
       </div>

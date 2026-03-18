@@ -155,36 +155,36 @@
 @keyframes flow-connector-travel-first {
   0% {
     opacity: 0;
-    background-position: 0% 50%;
+    background-position: 100% 50%;
   }
   5% {
     opacity: 1;
   }
   50% {
     opacity: 0;
-    background-position: 100% 50%;
+    background-position: 0% 50%;
   }
   100% {
     opacity: 0;
-    background-position: 100% 50%;
+    background-position: 0% 50%;
   }
 }
 
 @keyframes flow-connector-travel-second {
   0% {
     opacity: 0;
-    background-position: 0% 50%;
+    background-position: 100% 50%;
   }
   50% {
     opacity: 0;
-    background-position: 0% 50%;
+    background-position: 100% 50%;
   }
   55% {
     opacity: 1;
   }
   100% {
     opacity: 0;
-    background-position: 100% 50%;
+    background-position: 0% 50%;
   }
 }
 
