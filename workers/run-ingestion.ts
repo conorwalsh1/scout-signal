@@ -116,19 +116,30 @@ async function loadExistingEventKeys(
   supabase: ReturnType<typeof createServiceClient>,
   rawEvents: RawIngestionEvent[]
 ): Promise<{ externalIds: Set<string>; sourcePairs: Set<string> }> {
+  const EXTERNAL_ID_BATCH_SIZE = 250;
   const externalIds = Array.from(
     new Set(rawEvents.map((raw) => raw.external_id).filter((value): value is string => Boolean(value)))
   );
   const sourcePairs = new Set<string>();
 
   if (externalIds.length > 0) {
-    const { data, error } = await supabase
-      .from("events")
-      .select("external_id")
-      .in("external_id", externalIds);
-    if (error) throw new Error(error.message ?? "Failed to load existing event ids");
+    const existingExternalIds = new Set<string>();
+
+    for (let index = 0; index < externalIds.length; index += EXTERNAL_ID_BATCH_SIZE) {
+      const batch = externalIds.slice(index, index + EXTERNAL_ID_BATCH_SIZE);
+      const { data, error } = await supabase
+        .from("events")
+        .select("external_id")
+        .in("external_id", batch);
+      if (error) throw new Error(error.message ?? "Failed to load existing event ids");
+
+      for (const row of data ?? []) {
+        if (row.external_id) existingExternalIds.add(row.external_id);
+      }
+    }
+
     return {
-      externalIds: new Set((data ?? []).map((row) => row.external_id).filter((value): value is string => Boolean(value))),
+      externalIds: existingExternalIds,
       sourcePairs,
     };
   }
