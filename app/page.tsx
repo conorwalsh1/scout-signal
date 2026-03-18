@@ -64,14 +64,14 @@ export default async function HomePage() {
               body="Keep tabs on multiple accounts without overload. One place for the signals you’d otherwise miss."
               icon={<IconRadar className="h-5 w-5 text-signal-green" />}
             />
-            <FlowConnector />
+            <FlowConnector variant="first" />
             <FlowStep
               step={2}
               title="Prioritise"
               body="See what’s worth acting on. Rank changes and hiring momentum so you focus on the right opportunities."
               icon={<IconBolt className="h-5 w-5 text-signal-green" />}
             />
-            <FlowConnector />
+            <FlowConnector variant="second" />
             <FlowStep
               step={3}
               title="Act"
@@ -212,16 +212,21 @@ function FlowStep({
   );
 }
 
-function FlowConnector() {
+function FlowConnector({ variant }: { variant: "first" | "second" }) {
   return (
     <>
       {/* Desktop: arrow connector between cards */}
       <div className="hidden md:flex w-28 items-center justify-center">
         <div className="relative h-10 w-full">
-          {/* Base connector line */}
-          <div className="absolute left-1/2 top-1/2 h-px w-full -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-border via-signal-green/35 to-border" />
+          {/* Base connector line (neutral; green highlight comes from the traveling overlay) */}
+          <div className="absolute left-1/2 top-1/2 h-px w-full -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-border via-signal-green/8 to-border" />
           {/* Travelling green highlight segment */}
-          <div className="absolute left-1/2 top-1/2 h-0.5 w-full -translate-x-1/2 -translate-y-1/2 rounded-full flow-connector-travel" />
+          <div
+            className={[
+              "absolute left-1/2 top-1/2 h-0.5 w-full -translate-x-1/2 -translate-y-1/2 rounded-full",
+              variant === "first" ? "flow-connector-travel-first" : "flow-connector-travel-second",
+            ].join(" ")}
+          />
         </div>
       </div>
 
