@@ -1,5 +1,6 @@
 import type { ScoreComponents } from "@/types/database";
 import type { SignalType } from "./weights";
+import { formatFundingRoundType } from "@/lib/connectors/funding-utils";
 
 export type OutreachWindow = "This week" | "Next 1–2 weeks" | "Monitor (2–4 weeks)";
 export type OutreachConfidence = "high" | "medium" | "low";
@@ -25,6 +26,8 @@ export function getLatestSignalLabel(scoreComponents: ScoreComponents): string {
   if (c.ft1000_listed) return "FT1000";
   return "—";
 }
+
+export { formatFundingRoundType };
 
 /** Single "Why this matters" one-liner for the company (core intelligence layer). */
 export function getWhyThisMatters(scoreComponents: ScoreComponents): string {
@@ -76,7 +79,7 @@ export function getWhyThisMatters(scoreComponents: ScoreComponents): string {
   }
   if (hasFunding) {
     return fundingRound
-      ? `${fundingRound.replace(/_/g, " ")} funding detected — hiring capacity may expand soon.`
+      ? `${formatFundingRoundType(fundingRound) ?? fundingRound} funding detected — hiring capacity may expand soon.`
       : "Funding event detected — company is well-capitalized.";
   }
   if (hasFt1000) {
@@ -147,9 +150,9 @@ export function buildScoreExplanation(
   if (scoreComponents.funding_event) {
     const amountLabel = fundingAmount ? ` ${fundingCurrency ?? ""} ${fundingAmount}`.trim() : null;
     if (fundingRound && amountLabel) {
-      lines.push(`${fundingRound.replace(/_/g, " ")} funding detected (${amountLabel}).`);
+      lines.push(`${formatFundingRoundType(fundingRound) ?? fundingRound} funding detected (${amountLabel}).`);
     } else if (fundingRound) {
-      lines.push(`${fundingRound.replace(/_/g, " ")} funding detected.`);
+      lines.push(`${formatFundingRoundType(fundingRound) ?? fundingRound} funding detected.`);
     } else {
       lines.push("Funding event detected.");
     }

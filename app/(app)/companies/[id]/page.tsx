@@ -15,6 +15,7 @@ import { DashboardCard } from "@/components/company-detail/dashboard-card";
 import { HiringActivityChart, type HiringActivityPoint } from "@/components/company-detail/hiring-activity-chart";
 import {
   buildScoreExplanation,
+  formatFundingRoundType,
   getWhyThisMatters,
   getScoreBreakdown,
   getSuggestedOutreachTiming,
@@ -389,7 +390,7 @@ export default async function CompanyDetailPage({
                 <div>
                   <dt className="text-secondary">Funding</dt>
                   <dd className="text-foreground font-medium">
-                    {fundingRoundType.replace(/_/g, " ")}
+                    {formatFundingRoundType(fundingRoundType) ?? fundingRoundType}
                     {fundingAmount ? ` · ${fundingCurrency ?? ""} ${fundingAmount}`.trim() : ""}
                   </dd>
                 </div>

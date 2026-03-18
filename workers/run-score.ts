@@ -140,6 +140,7 @@ export async function run() {
       funding_amount: string | null;
       funding_currency: string | null;
       funding_investors: string[];
+      source_type: string | null;
     }
   >();
 
@@ -226,7 +227,7 @@ export async function run() {
   const recentFundingEvents = await fetchAllRows(async (from, to) => {
     const { data, error } = await supabase
       .from("events")
-      .select("company_id, metadata_json, detected_at")
+      .select("company_id, metadata_json, detected_at, source_type")
       .eq("event_type", "funding_event_detected")
       .gte("detected_at", sinceIso)
       .not("company_id", "is", null)
@@ -246,6 +247,7 @@ export async function run() {
       funding_investors: Array.isArray(metadata.investors)
         ? metadata.investors.filter((value): value is string => typeof value === "string")
         : [],
+      source_type: typeof event.source_type === "string" ? event.source_type : null,
     });
   }
   const companies = await fetchAllRows(async (from, to) => {
@@ -331,6 +333,13 @@ export async function run() {
         score_components_json.funding_amount = fundingContext.funding_amount;
         score_components_json.funding_currency = fundingContext.funding_currency;
         score_components_json.funding_investors = fundingContext.funding_investors;
+        const monitoredSourceTypes = new Set(
+          Array.isArray(score_components_json.monitored_source_types)
+            ? score_components_json.monitored_source_types.filter((value): value is string => typeof value === "string")
+            : []
+        );
+        if (fundingContext.source_type) monitoredSourceTypes.add(fundingContext.source_type);
+        score_components_json.monitored_source_types = Array.from(monitoredSourceTypes).sort();
       }
       const confidences = companySignals
         .map((signal) => signal.confidence)

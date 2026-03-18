@@ -2,7 +2,7 @@
  * Server-only data for the public landing page. No auth required.
  */
 import { createServiceClient } from "@/lib/supabase/service";
-import { getLatestSignalLabel } from "@/lib/signal-engine/explanations";
+import { formatFundingRoundType, getLatestSignalLabel } from "@/lib/signal-engine/explanations";
 import type { ScoreComponents } from "@/types/database";
 
 export async function getLandingCompaniesCount(): Promise<number> {
@@ -70,7 +70,7 @@ export async function getTopScoreCompanies(limit = 5): Promise<LandingCompanyPre
       const jobs = comp.job_posts ?? 0;
       if (comp.hiring_spike && jobs > 0) insight_line = `${jobs} roles posted this week`;
       else if (comp.hiring_spike) insight_line = "Multiple new roles in short window";
-      else if (comp.funding_event) insight_line = "Series A announced";
+      else if (comp.funding_event) insight_line = `${formatFundingRoundType(comp.funding_round_type as string | null | undefined) ?? "Funding"} announced`;
       else if (jobs > 0) insight_line = `${jobs} role${jobs !== 1 ? "s" : ""} posted recently`;
       else if (comp.ft1000_listed) insight_line = "FT1000 ranked";
       else insight_line = "Activity detected";
@@ -119,7 +119,7 @@ export async function getLatestSignalCompanies(limit = 3): Promise<LandingCompan
       const jobs = comp.job_posts ?? 0;
       if (comp.hiring_spike && jobs > 0) insight_line = `${jobs} roles posted this week`;
       else if (comp.hiring_spike) insight_line = "Multiple new roles in short window";
-      else if (comp.funding_event) insight_line = "Series A announced";
+      else if (comp.funding_event) insight_line = `${formatFundingRoundType(comp.funding_round_type as string | null | undefined) ?? "Funding"} announced`;
       else if (jobs > 0) insight_line = `${jobs} role${jobs !== 1 ? "s" : ""} posted recently`;
       else if (comp.ft1000_listed) insight_line = "FT1000 ranked";
       else insight_line = "Activity detected";

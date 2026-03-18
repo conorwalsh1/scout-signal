@@ -211,21 +211,9 @@ function FlowConnector() {
       <div className="hidden md:flex w-16 items-center justify-center">
         <div className="relative h-10 w-full">
           <div className="absolute left-1/2 top-1/2 h-px w-full -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-border via-signal-green/60 to-border" />
-          <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal-green/70 animate-pulse" />
-          <svg
-            viewBox="0 0 20 20"
-            fill="none"
-            aria-hidden="true"
-            className="absolute right-1 top-1/2 h-5 w-5 -translate-y-1/2 text-signal-green/80"
-          >
-            <path
-              d="M7.5 4.5L13 10l-5.5 5.5"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          {/* Travelling pulse */}
+          <div className="absolute left-0 top-1/2 h-2 w-2 -translate-y-1/2 rounded-full bg-signal-green/85 flow-pulse-dot" />
+          <div className="absolute left-0 top-1/2 h-4 w-4 -translate-y-1/2 rounded-full bg-signal-green/30 blur-md flow-pulse-dot" />
         </div>
       </div>
 

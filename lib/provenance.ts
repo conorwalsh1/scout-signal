@@ -16,6 +16,7 @@ export function getProvenanceInfo(sourceType: string | null | undefined): Proven
   if (t === "ashby_hiring") return { label: "Ashby", kind: "direct", sourceType: t };
 
   if (t === "career_page") return { label: "Company careers page", kind: "inferred", sourceType: t };
+  if (t === "funding_page") return { label: "Company news / press page", kind: "direct", sourceType: t };
   if (t === "funding_news") return { label: "News-derived", kind: "inferred", sourceType: t };
 
   if (t === "ft1000") return { label: "FT1000 (context)", kind: "context", sourceType: t };
@@ -30,8 +31,9 @@ export function rankProvenanceSourceTypes(sourceTypes: string[]): string[] {
     ["lever_hiring", 1],
     ["ashby_hiring", 2],
     ["career_page", 3],
-    ["funding_news", 4],
-    ["ft1000", 5],
+    ["funding_page", 4],
+    ["funding_news", 5],
+    ["ft1000", 6],
   ]);
   return [...sourceTypes].sort((a, b) => (order.get(a) ?? 999) - (order.get(b) ?? 999));
 }
@@ -44,4 +46,3 @@ export function formatDaysAgo(iso: string, now = new Date()): string | null {
   if (days === 1) return "1 day ago";
   return `${days} days ago`;
 }
-

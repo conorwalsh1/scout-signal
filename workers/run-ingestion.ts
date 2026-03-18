@@ -12,6 +12,7 @@ import { greenhouseHiringConnector } from "@/lib/connectors/greenhouse-hiring";
 import { leverHiringConnector } from "@/lib/connectors/lever-hiring";
 import { ashbyHiringConnector } from "@/lib/connectors/ashby-hiring";
 import { fundingNewsConnector } from "@/lib/connectors/funding-news";
+import { fundingPagesConnector } from "@/lib/connectors/funding-pages";
 import { matchCompany } from "@/lib/ingestion/company-match";
 import { withRetry } from "@/lib/retry";
 import type { RawIngestionEvent } from "@/types/ingestion";
@@ -22,6 +23,7 @@ const CORE_CONNECTORS = [
   greenhouseHiringConnector,
   leverHiringConnector,
   ashbyHiringConnector,
+  fundingPagesConnector,
   fundingNewsConnector,
 ];
 

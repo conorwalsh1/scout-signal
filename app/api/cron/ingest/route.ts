@@ -19,8 +19,17 @@ function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return true;
 
+  // Vercel Cron requests include this header.
+  const fromVercelCron = request.headers.get("x-vercel-cron") === "1";
+  if (fromVercelCron) return true;
+
   const auth = request.headers.get("authorization");
-  return auth === `Bearer ${secret}`;
+  if (auth === `Bearer ${secret}`) return true;
+
+  const fromQuery = request.nextUrl.searchParams.get("secret");
+  if (fromQuery && fromQuery === secret) return true;
+
+  return false;
 }
 
 function wantsFullPipeline(request: NextRequest): boolean {
