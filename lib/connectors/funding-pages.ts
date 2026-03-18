@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import { createServiceClient } from "@/lib/supabase/service";
+import { updateSourceRegistryStatus } from "@/lib/source-registry";
 import type { RawIngestionEvent } from "@/types/ingestion";
 import type { SourceConnector } from "./types";
 import {
@@ -10,6 +11,7 @@ import {
 
 const FUNDING_PATHS = ["/press", "/news", "/newsroom", "/blog", "/press-releases"];
 const FUNDING_HINT_RE = /\b(raises?|raised|secures?|secured|announces? funding|series\s+[a-f]|pre-seed|seed round|growth round|strategic investment)\b/i;
+const DEFAULT_SCAN_LIMIT = 60;
 
 function normalizeBaseUrl(sourceUrl: string | null, companyDomain: string | null): string | null {
   if (sourceUrl?.startsWith("http")) return sourceUrl.replace(/\/+$/, "");
@@ -41,19 +43,27 @@ export const fundingPagesConnector: SourceConnector = {
     const supabase = createServiceClient();
     const { data, error } = await supabase
       .from("monitored_sources")
-      .select("id, company_name, company_domain, source_url, active")
+      .select("id, company_name, company_domain, source_url, active, source_key, last_checked_at")
       .eq("source_type", "funding_page")
-      .eq("active", true);
+      .eq("active", true)
+      .order("last_checked_at", { ascending: true, nullsFirst: true });
 
     if (error || !data?.length) return [];
 
     const events: RawIngestionEvent[] = [];
     const seen = new Set<string>();
     const nowIso = new Date().toISOString();
+    const scanLimit = Number(process.env.FUNDING_PAGE_SCAN_LIMIT ?? DEFAULT_SCAN_LIMIT);
+    const rows = data.slice(0, Number.isFinite(scanLimit) && scanLimit > 0 ? scanLimit : DEFAULT_SCAN_LIMIT);
 
-    for (const row of data) {
+    for (const row of rows) {
       const baseUrl = normalizeBaseUrl(row.source_url, row.company_domain);
-      if (!baseUrl) continue;
+      if (!baseUrl) {
+        await updateSourceRegistryStatus("funding_page", row.source_key, "error", 0);
+        continue;
+      }
+
+      let rowResultCount = 0;
 
       for (const url of buildCandidateUrls(baseUrl)) {
         try {
@@ -87,6 +97,7 @@ export const fundingPagesConnector: SourceConnector = {
             const externalId = `funding_page:${candidateUrl}`;
             if (seen.has(externalId)) continue;
             seen.add(externalId);
+            rowResultCount++;
 
             events.push({
               source_type: "funding_page",
@@ -110,6 +121,8 @@ export const fundingPagesConnector: SourceConnector = {
           continue;
         }
       }
+
+      await updateSourceRegistryStatus("funding_page", row.source_key, "ok", rowResultCount);
     }
 
     return events;
