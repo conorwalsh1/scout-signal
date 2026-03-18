@@ -21,6 +21,7 @@ export function HiringActivityChart({ points, className, variant = "full" }: Hir
   const max = Math.max(...points.map((p) => p.count), 1);
   const total = points.reduce((a, p) => a + (Number.isFinite(p.count) ? p.count : 0), 0);
   const activeDays = points.filter((p) => p.count > 0).length;
+  const chartHeightPx = variant === "sparkline" ? 48 : 80;
 
   return (
     <div className={cn("space-y-2 group", className)}>
@@ -33,9 +34,16 @@ export function HiringActivityChart({ points, className, variant = "full" }: Hir
           <span className="hidden sm:inline opacity-80">Last 30 days</span>
         </div>
       )}
-      <div className={cn("flex items-end gap-1.5", variant === "sparkline" ? "h-12" : "h-20")}>
+      <div
+        className={cn("flex items-end gap-1.5", variant === "sparkline" ? "h-12" : "h-20")}
+        style={variant === "sparkline" ? { height: `${chartHeightPx}px` } : undefined}
+      >
         {points.map((p) => {
-          const height = (p.count / max) * 100;
+          const ratio = max > 0 ? p.count / max : 0;
+          const heightPx = Math.round(ratio * chartHeightPx);
+          // Sparkline needs a minimum pixel height for non-zero days, otherwise sub-pixel bars vanish.
+          const minPx = variant === "sparkline" ? (p.count > 0 ? 6 : 0) : 0;
+          const finalHeightPx = Math.max(minPx, heightPx);
           return (
             <div key={p.label} className="flex-1 flex flex-col items-center gap-1">
               {variant === "full" && (
@@ -45,7 +53,7 @@ export function HiringActivityChart({ points, className, variant = "full" }: Hir
               )}
               <div
                 className="w-full rounded-t-sm border border-signal-green/25 bg-gradient-to-t from-signal-green/45 to-signal-green/95 transition-all duration-200 group-hover:from-signal-green/25 group-hover:to-signal-green"
-                style={{ height: `${height || 8}%` }}
+                style={{ height: `${finalHeightPx}px` }}
               />
             </div>
           );
