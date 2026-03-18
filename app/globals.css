@@ -115,7 +115,7 @@
 @keyframes flow-pulse-move {
   0% {
     left: 0%;
-    opacity: 0;
+    opacity: 0.25;
   }
   10% {
     opacity: 1;
@@ -125,11 +125,44 @@
   }
   100% {
     left: 100%;
-    opacity: 0;
+    opacity: 0.15;
   }
 }
 
 .flow-pulse-dot {
   animation: flow-pulse-move 2.4s linear infinite;
   will-change: left, opacity;
+}
+
+/* Connector pulse (highlight) — more visible than a moving dot */
+@keyframes flow-connector-travel {
+  0% {
+    background-position: 0% 50%;
+    opacity: 0.0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    background-position: 100% 50%;
+    opacity: 0.0;
+  }
+}
+
+.flow-connector-travel {
+  background-image: linear-gradient(
+    to right,
+    rgba(34, 197, 94, 0) 0%,
+    rgba(34, 197, 94, 0) 35%,
+    rgba(34, 197, 94, 0.95) 50%,
+    rgba(34, 197, 94, 0) 65%,
+    rgba(34, 197, 94, 0) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: flow-connector-travel 2s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.35));
 }
