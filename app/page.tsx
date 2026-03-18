@@ -1,19 +1,25 @@
 import Link from "next/link";
 import {
   getLandingCompaniesCount,
+  getRadarSignalLabels,
   getSignalsTodayCount,
   getLatestSignalCompanies,
   getTopScoreCompanies,
 } from "@/lib/landing-data";
+import { LandingHeroWithRadar } from "@/components/landing/landing-hero-with-radar";
+import { LandingBadges } from "@/components/landing/landing-badges";
+import { LandingCompanyCard } from "@/components/landing/landing-company-card";
+import { CompanyLogo } from "@/components/company-logo";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [companiesCount, signalsToday, latestCompanies, topScoreCompanies] = await Promise.all([
+  const [companiesCount, signalsToday, latestCompanies, topScoreCompanies, radarLabels] = await Promise.all([
     getLandingCompaniesCount(),
     getSignalsTodayCount(),
     getLatestSignalCompanies(3),
     getTopScoreCompanies(5),
+    getRadarSignalLabels(6),
   ]);
 
   const displayCount = companiesCount > 0 ? companiesCount.toLocaleString() : "1,036";
@@ -43,40 +49,11 @@ export default async function HomePage() {
         </div>
       </header>
 
-      <section className="border-b border-border/50 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <div className="max-w-3xl">
-            <p className="text-sm font-medium uppercase tracking-[0.22em] text-signal-green">
-              For recruiters tracking too many accounts
-            </p>
-            <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground-heading sm:text-5xl lg:text-6xl">
-              Cut through the noise. See what actually matters.
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-secondary">
-              Track 30–50 companies without overload. Get the few signals worth acting on.
-            </p>
-            <p className="mt-4 text-sm text-muted-foreground">
-              Tracking <span className="font-semibold text-signal-green">{displayCount}</span> companies.
-              {" · "}
-              Signals detected today <span className="font-semibold text-signal-green">{signalsDisplay}</span>
-            </p>
-            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
-              <Link
-                href="/signup"
-                className="inline-flex justify-center rounded-lg bg-signal-green px-6 py-3.5 text-base font-semibold text-black no-underline hover:bg-signal-green/90"
-              >
-                Start free
-              </Link>
-              <Link
-                href="/login"
-                className="inline-flex justify-center rounded-lg border border-border px-6 py-3.5 text-base font-semibold text-foreground no-underline hover:bg-card"
-              >
-                See what actually matters
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <LandingHeroWithRadar
+        radarLabels={radarLabels}
+        displayCount={displayCount}
+        signalsDisplay={signalsDisplay}
+      />
 
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
@@ -95,14 +72,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="border-t border-border/50 px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-bold text-foreground-heading">Signals we detect</h2>
-          <p className="mt-2 text-sm text-secondary">
-            Hiring signals from credible public hiring infrastructure — plus context when it’s useful.
-          </p>
-        </div>
-      </section>
+      <LandingBadges />
 
       <section className="border-t border-border/50 bg-card/30 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
@@ -110,18 +80,7 @@ export default async function HomePage() {
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {latestCompanies.length > 0 ? (
               latestCompanies.map((company) => (
-                <Link
-                  key={company.id}
-                  href={`/companies/${company.id}`}
-                  className="block rounded-xl border border-border bg-card p-4 no-underline transition-all hover:border-signal-green/40 hover:shadow-[0_0_24px_rgba(34,197,94,0.08)]"
-                >
-                  <p className="font-semibold text-foreground-heading">{company.name}</p>
-                  <p className="mt-1 text-xs font-medium text-signal-green">
-                    Signal Score {(company.score / 10).toFixed(1)}
-                  </p>
-                  <p className="mt-2 text-xs text-secondary">{company.latest_signal_label} detected</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{company.insight_line}</p>
-                </Link>
+                <LandingCompanyCard key={company.id} company={company} plan="free" />
               ))
             ) : (
               <>
@@ -159,12 +118,17 @@ export default async function HomePage() {
                   key={company.id}
                   className="flex items-center justify-between border-b border-border/60 px-5 py-4 last:border-b-0"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
-                    <p className="mt-1 text-xs text-signal-green">
-                      Signal Score {(company.score / 10).toFixed(1)} · {company.latest_signal_label}
-                    </p>
-                    <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
+                  <div className="min-w-0 flex items-start gap-3">
+                    <div className="mt-0.5 h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-border bg-sidebar flex items-center justify-center">
+                      <CompanyLogo name={company.name} website={company.website} domain={company.domain} className="h-full w-full object-contain" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
+                      <p className="mt-1 text-xs text-signal-green">
+                        Signal Score {(company.score / 10).toFixed(1)} · {company.latest_signal_label}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
+                    </div>
                   </div>
                   <div className="pl-4 text-sm font-semibold text-muted-foreground">#{index + 1}</div>
                 </div>
