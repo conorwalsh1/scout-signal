@@ -24,6 +24,8 @@ import { CompanyBadge } from "@/components/company-badge";
 import { formatDaysAgo, getProvenanceInfo, rankProvenanceSourceTypes } from "@/lib/provenance";
 import type { Plan, ScoreComponents } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
+import { getCompanyRelationshipContacts } from "./relationship-actions";
+import { RelationshipAssist } from "./relationship-assist";
 
 function scoreCategory(score: number): "LOW" | "MEDIUM" | "HIGH" {
   const outOf10 = score / 10;
@@ -63,6 +65,7 @@ export default async function CompanyDetailPage({
   ]);
 
   if (!company) notFound();
+  const relationshipContacts = await getCompanyRelationshipContacts(id);
 
   const comp = company.score_components_json as ScoreComponents;
   const lines = buildScoreExplanation(comp);
@@ -282,81 +285,9 @@ export default async function CompanyDetailPage({
         </div>
       </div>
 
-      {/* Primary row – keep essentials tight in a single band */}
+      {/* Primary row – narrative + facts side-by-side */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-        <div className="md:col-span-4">
-          <DashboardCard
-            title="Signal Score"
-            className={
-              category === "HIGH"
-                ? "bg-[rgba(34,197,94,0.14)] border-signal-green/50"
-                : category === "MEDIUM"
-                  ? "bg-[rgba(56,189,248,0.12)] border-data-blue/50"
-                  : ""
-            }
-          >
-            <div className="space-y-3">
-              <p className="text-4xl font-bold font-mono text-foreground-heading">
-                {scoreOutOf10} <span className="text-base font-normal text-secondary">/ 10</span>
-              </p>
-              <p className={`text-sm font-semibold uppercase tracking-wide ${scoreCategoryColor(company.score)}`}>
-                {category} SIGNAL
-              </p>
-              {rankContext.rank != null && rankContext.totalRanked > 0 && (
-                <p className="text-xs text-secondary">
-                  Rank: <span className="font-mono font-semibold text-foreground-heading">#{rankContext.rank}</span>{" "}
-                  of {rankContext.totalRanked.toLocaleString()} companies monitored
-                </p>
-              )}
-              {scoreBreakdown.length > 0 && (
-                <div className="border-t border-border pt-3">
-                  <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary mb-1">Score components</p>
-                  <ul className="space-y-1 text-sm">
-                    {scoreBreakdown.slice(0, 3).map((row) => (
-                      <li key={row.key} className="flex justify-between gap-2">
-                        <span className="text-foreground">{row.label}</span>
-                        <span className="font-mono font-medium text-signal-green/90">+{row.points.toFixed(1)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              <div className="border-t border-border pt-3">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary mb-1">
-                  Recent signals
-                </p>
-                <ul className="space-y-1 text-xs text-foreground">
-                  {timelineByDate.slice(0, 3).map((entry) => (
-                    <li key={entry.key} className="flex gap-2">
-                      <span className="shrink-0 text-secondary w-16">{entry.date}</span>
-                      <span className="flex-1">
-                        {entry.sourceUrl ? (
-                          <a
-                            href={entry.sourceUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline decoration-dotted underline-offset-2 hover:decoration-solid"
-                          >
-                            {entry.label}
-                          </a>
-                        ) : (
-                          entry.label
-                        )}
-                        {(entry.provenanceLabel || entry.confidence) && (
-                          <span className="ml-2 text-[10px] text-secondary">
-                            {entry.provenanceLabel ? `· ${entry.provenanceLabel}` : ""}
-                            {entry.confidence ? ` · ${entry.confidence} confidence` : ""}
-                          </span>
-                        )}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </DashboardCard>
-        </div>
-        <div className="md:col-span-4">
+        <div className="md:col-span-8">
           <DashboardCard title="Why this matters">
             <p className="text-sm font-medium text-foreground">
               {whyThisMatters}
@@ -503,6 +434,85 @@ export default async function CompanyDetailPage({
           </DashboardCard>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
+        <div className="md:col-span-12">
+          <DashboardCard
+            title="Signal Score"
+            className={
+              category === "HIGH"
+                ? "bg-[rgba(34,197,94,0.14)] border-signal-green/50"
+                : category === "MEDIUM"
+                  ? "bg-[rgba(56,189,248,0.12)] border-data-blue/50"
+                  : ""
+            }
+          >
+            <div className="space-y-3">
+              <p className="text-4xl font-bold font-mono text-foreground-heading">
+                {scoreOutOf10} <span className="text-base font-normal text-secondary">/ 10</span>
+              </p>
+              <p className={`text-sm font-semibold uppercase tracking-wide ${scoreCategoryColor(company.score)}`}>
+                {category} SIGNAL
+              </p>
+              {rankContext.rank != null && rankContext.totalRanked > 0 && (
+                <p className="text-xs text-secondary">
+                  Rank: <span className="font-mono font-semibold text-foreground-heading">#{rankContext.rank}</span>{" "}
+                  of {rankContext.totalRanked.toLocaleString()} companies monitored
+                </p>
+              )}
+              {scoreBreakdown.length > 0 && (
+                <div className="border-t border-border pt-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary mb-1">Score components</p>
+                  <ul className="space-y-1 text-sm">
+                    {scoreBreakdown.slice(0, 3).map((row) => (
+                      <li key={row.key} className="flex justify-between gap-2">
+                        <span className="text-foreground">{row.label}</span>
+                        <span className="font-mono font-medium text-signal-green/90">+{row.points.toFixed(1)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <div className="border-t border-border pt-3">
+                <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary mb-1">
+                  Recent signals
+                </p>
+                <ul className="space-y-1 text-xs text-foreground">
+                  {timelineByDate.slice(0, 3).map((entry) => (
+                    <li key={entry.key} className="flex gap-2">
+                      <span className="shrink-0 text-secondary w-16">{entry.date}</span>
+                      <span className="flex-1">
+                        {entry.sourceUrl ? (
+                          <a
+                            href={entry.sourceUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline decoration-dotted underline-offset-2 hover:decoration-solid"
+                          >
+                            {entry.label}
+                          </a>
+                        ) : (
+                          entry.label
+                        )}
+                        {(entry.provenanceLabel || entry.confidence) && (
+                          <span className="ml-2 text-[10px] text-secondary">
+                            {entry.provenanceLabel ? `· ${entry.provenanceLabel}` : ""}
+                            {entry.confidence ? ` · ${entry.confidence} confidence` : ""}
+                          </span>
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </DashboardCard>
+        </div>
+      </div>
+
+      <DashboardCard title="Do you know anyone at this company?">
+        <RelationshipAssist companyId={company.id} initialContacts={relationshipContacts} />
+      </DashboardCard>
 
     </div>
   );

@@ -175,6 +175,21 @@ export interface SavedTarget {
   created_at: string;
 }
 
+export type CouldMakeIntro = "yes" | "maybe" | "no";
+
+export interface CompanyRelationshipContact {
+  id: string;
+  user_id: string;
+  company_id: string;
+  contact_name: string;
+  role: string | null;
+  company: string | null;
+  relationship_to_you: string | null;
+  could_make_intro: CouldMakeIntro;
+  notes: string | null;
+  created_at: string;
+}
+
 /** Company with score for dashboard feed */
 export interface CompanyWithScore extends Company {
   score: number;
