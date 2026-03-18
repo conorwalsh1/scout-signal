@@ -130,6 +130,6 @@
 }
 
 .flow-pulse-dot {
-  animation: flow-pulse-move 1.8s linear infinite;
+  animation: flow-pulse-move 2.4s linear infinite;
   will-change: transform, opacity;
 }

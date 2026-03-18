@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { CursorTrail } from "./cursor-trail";
+import { useRef, useState } from "react";
 import { LandingRadar, type RadarLabel } from "./landing-radar";
 
 export function LandingHeroWithRadar({
@@ -13,10 +13,44 @@ export function LandingHeroWithRadar({
   displayCount: string;
   signalsDisplay: string | number;
 }) {
+  const [clicks, setClicks] = useState<{ id: number; x: number; y: number }[]>([]);
+  const nextIdRef = useRef(0);
+
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    const x = event.clientX;
+    const y = event.clientY;
+    const id = nextIdRef.current++;
+    setClicks((prev) => [...prev, { id, x, y }]);
+    setTimeout(() => {
+      setClicks((prev) => prev.filter((pulse) => pulse.id !== id));
+    }, 900);
+  };
+
   return (
     <>
-      <CursorTrail />
-      <section className="relative border-b border-border/50 px-4 py-16 sm:px-6 lg:px-8" data-landing="hero-with-radar">
+      {/* Click-based radar pulses */}
+      <div className="pointer-events-none fixed inset-0 z-[40]" aria-hidden>
+        {clicks.map((pulse) => (
+          <div
+            key={pulse.id}
+            className="click-radar-ripple absolute rounded-full border border-signal-green/50"
+            style={{
+              left: pulse.x,
+              top: pulse.y,
+              width: 200,
+              height: 200,
+              marginLeft: -100,
+              marginTop: -100,
+              boxShadow: "0 0 40px 12px rgba(34, 197, 94, 0.35)",
+            }}
+          />
+        ))}
+      </div>
+      <section
+        className="relative border-b border-border/50 px-4 py-16 sm:px-6 lg:px-8"
+        data-landing="hero-with-radar"
+        onClick={handleClick}
+      >
         <div className="mx-auto max-w-6xl">
           <div className="flex flex-col items-center gap-12 lg:flex-row lg:justify-between lg:gap-16">
             <div className="flex shrink-0 justify-center lg:order-2">
