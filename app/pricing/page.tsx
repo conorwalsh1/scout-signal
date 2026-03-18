@@ -192,7 +192,7 @@ export default async function PricingPage() {
         </div>
 
         <p className="mt-10 text-center text-sm text-muted-foreground">
-          <Link href="/" className="underline hover:text-foreground">
+          <Link href={user ? "/dashboard" : "/"} className="underline hover:text-foreground">
             Back to home
           </Link>
         </p>
