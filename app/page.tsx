@@ -56,19 +56,29 @@ export default async function HomePage() {
       />
 
       <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-          <InfoCard
-            title="Track"
-            body="Keep tabs on multiple accounts without overload. One place for the signals you’d otherwise miss."
-          />
-          <InfoCard
-            title="Prioritise"
-            body="See what’s worth acting on. Rank changes and hiring momentum so you focus on the right opportunities."
-          />
-          <InfoCard
-            title="Act"
-            body="Know what changed, when it changed, and where it came from — then reach out at the right time."
-          />
+        <div className="mx-auto max-w-6xl">
+          <div className="flex flex-col gap-4 md:flex-row md:items-stretch md:gap-0">
+            <FlowStep
+              step={1}
+              title="Track"
+              body="Keep tabs on multiple accounts without overload. One place for the signals you’d otherwise miss."
+              icon={<IconRadar className="h-5 w-5 text-signal-green" />}
+            />
+            <FlowConnector />
+            <FlowStep
+              step={2}
+              title="Prioritise"
+              body="See what’s worth acting on. Rank changes and hiring momentum so you focus on the right opportunities."
+              icon={<IconBolt className="h-5 w-5 text-signal-green" />}
+            />
+            <FlowConnector />
+            <FlowStep
+              step={3}
+              title="Act"
+              body="Know what changed, when it changed, and where it came from — then reach out at the right time."
+              icon={<IconArrowOut className="h-5 w-5 text-signal-green" />}
+            />
+          </div>
         </div>
       </section>
 
@@ -159,5 +169,145 @@ function InfoCard({ title, body }: { title: string; body: string }) {
       <h3 className="text-lg font-semibold text-foreground-heading">{title}</h3>
       <p className="mt-3 text-sm leading-relaxed text-secondary">{body}</p>
     </div>
+  );
+}
+
+function FlowStep({
+  step,
+  title,
+  body,
+  icon,
+}: {
+  step: number;
+  title: string;
+  body: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-xl border border-border bg-card p-6 md:flex-1">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-signal-green/25 bg-background">
+            <div className="absolute -inset-1 rounded-xl opacity-30 blur-md bg-gradient-to-r from-signal-green/0 via-signal-green/35 to-signal-green/0" />
+            <div className="relative z-10">{icon}</div>
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-lg font-semibold text-foreground-heading">{title}</h3>
+            <p className="mt-3 text-sm leading-relaxed text-secondary">{body}</p>
+          </div>
+        </div>
+        <div className="shrink-0 rounded-full border border-border bg-background px-2 py-1 text-xs font-semibold text-muted-foreground">
+          {step}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FlowConnector() {
+  return (
+    <>
+      {/* Desktop: arrow connector between cards */}
+      <div className="hidden md:flex w-16 items-center justify-center">
+        <div className="relative h-10 w-full">
+          <div className="absolute left-1/2 top-1/2 h-px w-full -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-border via-signal-green/60 to-border" />
+          <div className="absolute left-1/2 top-1/2 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-signal-green/70 animate-pulse" />
+          <svg
+            viewBox="0 0 20 20"
+            fill="none"
+            aria-hidden="true"
+            className="absolute right-1 top-1/2 h-5 w-5 -translate-y-1/2 text-signal-green/80"
+          >
+            <path
+              d="M7.5 4.5L13 10l-5.5 5.5"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+      </div>
+
+      {/* Mobile: chevron down between stacked cards */}
+      <div className="flex items-center justify-center md:hidden py-1 text-muted-foreground">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-5 w-5 opacity-70">
+          <path
+            d="M5 7.5l5 5 5-5"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+    </>
+  );
+}
+
+function IconRadar(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M10 18c4.418 0 8-3.582 8-8"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M10 14c2.21 0 4-1.79 4-4"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        opacity="0.9"
+      />
+      <path
+        d="M10 10l5-5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <circle cx="10" cy="10" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+function IconBolt(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M11 1.5L4.5 11h5L9 18.5 15.5 9h-5L11 1.5z"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function IconArrowOut(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" {...props}>
+      <path
+        d="M8 12l8-8"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M11 4h5v5"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M16 12.5v3A2.5 2.5 0 0 1 13.5 18h-9A2.5 2.5 0 0 1 2 15.5v-9A2.5 2.5 0 0 1 4.5 4h3"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        opacity="0.9"
+      />
+    </svg>
   );
 }
