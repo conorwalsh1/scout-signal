@@ -4,24 +4,16 @@ import {
   getSignalsTodayCount,
   getLatestSignalCompanies,
   getTopScoreCompanies,
-  getRadarSignalLabels,
 } from "@/lib/landing-data";
-import { LandingHeroWithRadar } from "@/components/landing/landing-hero-with-radar";
-import { LandingBadges } from "@/components/landing/landing-badges";
-import { LandingCompanyCard } from "@/components/landing/landing-company-card";
-import { CompanyLogo } from "@/components/company-logo";
-import { CompanyBadge } from "@/components/company-badge";
-import { getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [companiesCount, signalsToday, latestCompanies, topScoreCompanies, radarLabels] = await Promise.all([
+  const [companiesCount, signalsToday, latestCompanies, topScoreCompanies] = await Promise.all([
     getLandingCompaniesCount(),
     getSignalsTodayCount(),
     getLatestSignalCompanies(3),
     getTopScoreCompanies(5),
-    getRadarSignalLabels(6),
   ]);
 
   const displayCount = companiesCount > 0 ? companiesCount.toLocaleString() : "1,036";
@@ -51,11 +43,40 @@ export default async function HomePage() {
         </div>
       </header>
 
-      <LandingHeroWithRadar
-        radarLabels={radarLabels}
-        displayCount={displayCount}
-        signalsDisplay={signalsDisplay}
-      />
+      <section className="border-b border-border/50 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <div className="max-w-3xl">
+            <p className="text-sm font-medium uppercase tracking-[0.22em] text-signal-green">
+              Hiring intelligence for early growth
+            </p>
+            <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground-heading sm:text-5xl lg:text-6xl">
+              Discover companies before they start scaling.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-secondary">
+              Real-time hiring intelligence that reveals which companies are about to grow.
+            </p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Tracking <span className="font-semibold text-signal-green">{displayCount}</span> companies.
+              {" · "}
+              Signals detected today <span className="font-semibold text-signal-green">{signalsDisplay}</span>
+            </p>
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+              <Link
+                href="/signup"
+                className="inline-flex justify-center rounded-lg bg-signal-green px-6 py-3.5 text-base font-semibold text-black no-underline hover:bg-signal-green/90"
+              >
+                Create free account
+              </Link>
+              <Link
+                href="/login"
+                className="inline-flex justify-center rounded-lg border border-border px-6 py-3.5 text-base font-semibold text-foreground no-underline hover:bg-card"
+              >
+                View live signals
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
@@ -74,7 +95,14 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <LandingBadges />
+      <section className="border-t border-border/50 px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <h2 className="text-2xl font-bold text-foreground-heading">Signals we detect</h2>
+          <p className="mt-2 text-sm text-secondary">
+            Hiring momentum, engineering buildout, AI hiring, funding activity, and leadership change.
+          </p>
+        </div>
+      </section>
 
       <section className="border-t border-border/50 bg-card/30 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
@@ -82,49 +110,39 @@ export default async function HomePage() {
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {latestCompanies.length > 0 ? (
               latestCompanies.map((company) => (
-                <LandingCompanyCard key={company.id} company={company} />
+                <Link
+                  key={company.id}
+                  href={`/companies/${company.id}`}
+                  className="block rounded-xl border border-border bg-card p-4 no-underline transition-all hover:border-signal-green/40 hover:shadow-[0_0_24px_rgba(34,197,94,0.08)]"
+                >
+                  <p className="font-semibold text-foreground-heading">{company.name}</p>
+                  <p className="mt-1 text-xs font-medium text-signal-green">
+                    Signal Score {(company.score / 10).toFixed(1)}
+                  </p>
+                  <p className="mt-2 text-xs text-secondary">{company.latest_signal_label} detected</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{company.insight_line}</p>
+                </Link>
               ))
             ) : (
               <>
-                <LandingCompanyCard
-                  company={{
-                    id: "beta-labs",
-                    name: "Beta Labs",
-                    domain: "betalabs.example",
-                    website: "https://betalabs.example",
-                    score: 100,
-                    last_calculated_at: new Date().toISOString(),
-                    score_components_json: {} as any,
-                    latest_signal_label: "Hiring Surge",
-                    insight_line: "12 roles posted this week",
-                  }}
-                />
-                <LandingCompanyCard
-                  company={{
-                    id: "gamma-inc",
-                    name: "Gamma Inc",
-                    domain: "gammainc.example",
-                    website: "https://gammainc.example",
-                    score: 92,
-                    last_calculated_at: new Date().toISOString(),
-                    score_components_json: {} as any,
-                    latest_signal_label: "Funding Event",
-                    insight_line: "Series A announced",
-                  }}
-                />
-                <LandingCompanyCard
-                  company={{
-                    id: "acme-corp",
-                    name: "Acme Corp",
-                    domain: "acme.example",
-                    website: "https://acme.example",
-                    score: 87,
-                    last_calculated_at: new Date().toISOString(),
-                    score_components_json: {} as any,
-                    latest_signal_label: "Engineering Hiring",
-                    insight_line: "Backend team expansion",
-                  }}
-                />
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="font-semibold text-foreground-heading">Beta Labs</p>
+                  <p className="mt-1 text-xs font-medium text-signal-green">Signal Score 10.0</p>
+                  <p className="mt-2 text-xs text-secondary">Hiring Surge detected</p>
+                  <p className="mt-1 text-xs text-muted-foreground">12 roles posted this week</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="font-semibold text-foreground-heading">Gamma Inc</p>
+                  <p className="mt-1 text-xs font-medium text-signal-green">Signal Score 9.2</p>
+                  <p className="mt-2 text-xs text-secondary">Funding Event detected</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Series A announced</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="font-semibold text-foreground-heading">Acme Corp</p>
+                  <p className="mt-1 text-xs font-medium text-signal-green">Signal Score 8.7</p>
+                  <p className="mt-2 text-xs text-secondary">Engineering Hiring detected</p>
+                  <p className="mt-1 text-xs text-muted-foreground">Backend team expansion</p>
+                </div>
               </>
             )}
           </div>
@@ -136,45 +154,21 @@ export default async function HomePage() {
           <h2 className="text-2xl font-bold text-foreground-heading">Top ranked companies</h2>
           <div className="mt-8 overflow-hidden rounded-xl border border-border bg-card">
             {topScoreCompanies.length > 0 ? (
-              topScoreCompanies.map((company, index) => {
-                const badgeIds = pickDisplayBadges(
-                  getCompanyBadgesForPlan(company.score_components_json, { score: company.score, plan: "free" }),
-                  3
-                );
-                const scoreOutOf10 = (company.score / 10).toFixed(1);
-                return (
-                  <div
-                    key={company.id}
-                    className="flex items-center justify-between border-b border-border/60 px-5 py-4 last:border-b-0"
-                  >
-                    <div className="flex items-start gap-3 min-w-0">
-                      <div className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-border bg-sidebar flex items-center justify-center">
-                        <CompanyLogo
-                          name={company.name}
-                          website={company.website}
-                          domain={company.domain}
-                          className="h-full w-full object-contain"
-                        />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
-                        <p className="mt-1 text-xs text-signal-green">
-                          Signal Score {scoreOutOf10} · {company.latest_signal_label}
-                        </p>
-                        <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
-                        {badgeIds.length > 0 && (
-                          <div className="mt-1 flex flex-wrap gap-1">
-                            {badgeIds.map((bid) => (
-                              <CompanyBadge key={bid} badgeId={bid} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="pl-4 text-sm font-semibold text-muted-foreground">#{index + 1}</div>
+              topScoreCompanies.map((company, index) => (
+                <div
+                  key={company.id}
+                  className="flex items-center justify-between border-b border-border/60 px-5 py-4 last:border-b-0"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
+                    <p className="mt-1 text-xs text-signal-green">
+                      Signal Score {(company.score / 10).toFixed(1)} · {company.latest_signal_label}
+                    </p>
+                    <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
                   </div>
-                );
-              })
+                  <div className="pl-4 text-sm font-semibold text-muted-foreground">#{index + 1}</div>
+                </div>
+              ))
             ) : (
               <div className="px-5 py-10 text-center text-sm text-muted-foreground">
                 Sign in to see the full ranked dashboard.
