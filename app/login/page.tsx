@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -86,6 +87,17 @@ function LoginForm() {
       <div className="flex flex-1 items-center justify-center p-8 lg:p-12">
         <div className="w-full max-w-sm space-y-6">
           <div>
+            <div className="mb-3 inline-flex items-center gap-2">
+              <Image
+                src="/brand-mark.png"
+                alt="ScoutSignal"
+                width={18}
+                height={18}
+                className="h-[18px] w-[18px] object-contain"
+                priority
+              />
+              <span className="text-sm font-semibold text-foreground-heading">ScoutSignal</span>
+            </div>
             <h1 className="text-2xl font-bold text-foreground-heading">Log in</h1>
             <p className="mt-1 text-sm text-secondary">
               Access your company signal intelligence dashboard.

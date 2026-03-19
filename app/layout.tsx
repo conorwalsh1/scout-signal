@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description:
     "Real-time hiring intelligence that reveals which companies are about to grow. Track high-growth companies across Europe and the US.",
   icons: {
-    icon: "/logo.png",
-    apple: "/logo.png",
+    icon: "/brand-mark.png",
+    apple: "/brand-mark.png",
   },
 };
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   getLandingCompaniesCount,
   getRadarSignalLabels,
@@ -30,8 +31,16 @@ export default async function HomePage() {
     <main className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border/60 bg-background/95">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="font-semibold text-foreground-heading no-underline">
-            ScoutSignal
+          <Link href="/" className="inline-flex items-center gap-2 font-semibold text-foreground-heading no-underline">
+            <Image
+              src="/brand-mark.png"
+              alt="ScoutSignal"
+              width={18}
+              height={18}
+              className="h-[18px] w-[18px] object-contain"
+              priority
+            />
+            <span>ScoutSignal</span>
           </Link>
           <nav className="flex items-center gap-4">
             <Link href="/pricing" className="text-sm font-medium text-secondary no-underline hover:text-foreground">
