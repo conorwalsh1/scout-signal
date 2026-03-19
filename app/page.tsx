@@ -8,6 +8,9 @@ import {
 } from "@/lib/landing-data";
 import { LandingHeroWithRadar } from "@/components/landing/landing-hero-with-radar";
 import { LandingBadges } from "@/components/landing/landing-badges";
+import { CompanyLogo } from "@/components/company-logo";
+import { BADGES, BADGE_STYLES, getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
+import type { ScoreComponents } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -138,14 +141,58 @@ export default async function HomePage() {
                   href={`/companies/${company.id}`}
                   className="flex items-center justify-between border-b border-border/60 px-5 py-4 no-underline last:border-b-0 hover:bg-card/70"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
-                    <p className="mt-1 text-xs text-signal-green">
-                      Signal Score {(company.score / 10).toFixed(1)} · {company.latest_signal_label}
-                    </p>
-                    <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
+                  <div className="min-w-0 flex items-center gap-3">
+                    <div className="h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-border bg-sidebar flex items-center justify-center">
+                      <CompanyLogo
+                        name={company.name}
+                        website={company.website}
+                        domain={company.domain}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
+                      <p className="mt-1 text-xs text-signal-green">
+                        Signal Score {(company.score / 10).toFixed(1)} · {company.latest_signal_label}
+                      </p>
+                      <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
+                      {(() => {
+                        const badgeIds = pickDisplayBadges(
+                          getCompanyBadgesForPlan(company.score_components_json as ScoreComponents, {
+                            score: company.score,
+                            plan: "free",
+                          }),
+                          3
+                        );
+                        if (badgeIds.length === 0) return null;
+
+                        return (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {badgeIds.map((bid) => {
+                              const label =
+                                bid === "leadership_hire"
+                                  ? "Exec signal"
+                                  : BADGES.find((b) => b.id === bid)?.label ?? bid.replace(/_/g, " ");
+                              const styleClass = BADGE_STYLES[bid] ?? "bg-muted/80 text-secondary border border-border";
+
+                              return (
+                                <span
+                                  key={bid}
+                                  className={[
+                                    "inline-flex items-center rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-wide",
+                                    styleClass,
+                                  ].join(" ")}
+                                >
+                                  {label}
+                                </span>
+                              );
+                            })}
+                          </div>
+                        );
+                      })()}
+                    </div>
                   </div>
-                  <div className="pl-4 text-sm font-semibold text-muted-foreground">#{index + 1}</div>
+                  <div className="pl-4 text-sm font-semibold text-muted-foreground shrink-0">#{index + 1}</div>
                 </Link>
               ))
             ) : (

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BADGES } from "@/lib/badges";
+import { BADGES, BADGE_STYLES } from "@/lib/badges";
 
 export function LandingBadges() {
   return (
@@ -14,9 +14,12 @@ export function LandingBadges() {
             <Link
               key={badge.id}
               href={`/companies?badge=${badge.id}&sort=rank`}
-              className="inline-flex items-center rounded-md border border-border bg-card px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary no-underline transition-colors hover:border-signal-green/40 hover:text-foreground"
+              className={[
+                "inline-flex items-center rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-wide no-underline transition-all duration-150 hover:-translate-y-[1px]",
+                BADGE_STYLES[badge.id],
+              ].join(" ")}
             >
-              {badge.label}
+              {badge.id === "leadership_hire" ? "Exec signal" : badge.label}
             </Link>
           ))}
         </div>
