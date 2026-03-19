@@ -61,13 +61,13 @@ export function LandingHeroWithRadar({
             </div>
             <div className="min-w-0 flex-1 text-center lg:order-1 lg:text-left">
               <p className="text-sm font-medium uppercase tracking-[0.22em] text-signal-green">
-                For recruiters tracking too many accounts
+                You&apos;re not short on data. You&apos;re short on signal.
               </p>
               <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground-heading sm:text-5xl lg:text-6xl">
-                Cut through the noise. See what actually matters.
+                Know who to contact this week.
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-secondary lg:mx-0">
-                Track multiple accounts without overload. Focus on the right opportunities.
+                ScoutSignal tracks hiring momentum across your target accounts and ranks who is actually worth your time.
               </p>
               <p className="mt-4 text-sm text-muted-foreground">
                 Tracking <span className="font-semibold text-signal-green">{displayCount}</span> companies.
