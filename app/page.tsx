@@ -8,8 +8,6 @@ import {
 } from "@/lib/landing-data";
 import { LandingHeroWithRadar } from "@/components/landing/landing-hero-with-radar";
 import { LandingBadges } from "@/components/landing/landing-badges";
-import { LandingCompanyCard } from "@/components/landing/landing-company-card";
-import { CompanyLogo } from "@/components/company-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -90,7 +88,18 @@ export default async function HomePage() {
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {latestCompanies.length > 0 ? (
               latestCompanies.map((company) => (
-                <LandingCompanyCard key={company.id} company={company} plan="free" />
+                <Link
+                  key={company.id}
+                  href={`/companies/${company.id}`}
+                  className="block rounded-xl border border-border bg-card p-4 no-underline transition-all hover:border-signal-green/40 hover:shadow-[0_0_24px_rgba(34,197,94,0.08)]"
+                >
+                  <p className="font-semibold text-foreground-heading">{company.name}</p>
+                  <p className="mt-1 text-xs font-medium text-signal-green">
+                    Signal Score {(company.score / 10).toFixed(1)}
+                  </p>
+                  <p className="mt-2 text-xs text-secondary">{company.latest_signal_label} detected</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{company.insight_line}</p>
+                </Link>
               ))
             ) : (
               <>
@@ -124,24 +133,20 @@ export default async function HomePage() {
           <div className="mt-8 overflow-hidden rounded-xl border border-border bg-card">
             {topScoreCompanies.length > 0 ? (
               topScoreCompanies.map((company, index) => (
-                <div
+                <Link
                   key={company.id}
-                  className="flex items-center justify-between border-b border-border/60 px-5 py-4 last:border-b-0"
+                  href={`/companies/${company.id}`}
+                  className="flex items-center justify-between border-b border-border/60 px-5 py-4 no-underline last:border-b-0 hover:bg-card/70"
                 >
-                  <div className="min-w-0 flex items-start gap-3">
-                    <div className="mt-0.5 h-9 w-9 shrink-0 overflow-hidden rounded-lg border border-border bg-sidebar flex items-center justify-center">
-                      <CompanyLogo name={company.name} website={company.website} domain={company.domain} className="h-full w-full object-contain" />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
-                      <p className="mt-1 text-xs text-signal-green">
-                        Signal Score {(company.score / 10).toFixed(1)} · {company.latest_signal_label}
-                      </p>
-                      <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
-                    </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold text-foreground-heading">{company.name}</p>
+                    <p className="mt-1 text-xs text-signal-green">
+                      Signal Score {(company.score / 10).toFixed(1)} · {company.latest_signal_label}
+                    </p>
+                    <p className="mt-1 truncate text-xs text-secondary">{company.insight_line}</p>
                   </div>
                   <div className="pl-4 text-sm font-semibold text-muted-foreground">#{index + 1}</div>
-                </div>
+                </Link>
               ))
             ) : (
               <div className="px-5 py-10 text-center text-sm text-muted-foreground">
