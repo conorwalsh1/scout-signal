@@ -122,6 +122,27 @@ export function DashboardFeed({
     return { total, highSignal, withHiringSignals };
   }, [baseFiltered]);
 
+  const freshnessStats = useMemo(() => {
+    const now = Date.now();
+    const dayMs = 24 * 60 * 60 * 1000;
+    const updatedToday = baseFiltered.filter((c) => {
+      const t = new Date(c.last_calculated_at).getTime();
+      return Number.isFinite(t) && now - t <= dayMs;
+    }).length;
+    const movedToday = baseFiltered.filter((c) => {
+      return (
+        c.rank_position != null &&
+        c.previous_rank_position != null &&
+        c.rank_position !== c.previous_rank_position
+      );
+    }).length;
+    return {
+      updatedToday,
+      movedToday,
+      recentHeadlines: recentHeadlines.length,
+    };
+  }, [baseFiltered, recentHeadlines]);
+
   const filteredFeed = useMemo(() => {
     let list = baseFiltered;
     if (summaryFilter === "high_signal") {
@@ -144,6 +165,28 @@ export function DashboardFeed({
     });
     return sorted;
   }, [baseFiltered, summaryFilter, sort]);
+
+  const movers = useMemo(() => {
+    const moved = filteredFeed
+      .filter((company) => company.rank_position != null && company.previous_rank_position != null)
+      .map((company) => ({
+        ...company,
+        movement: (company.previous_rank_position ?? 0) - (company.rank_position ?? 0),
+      }))
+      .filter((company) => company.movement !== 0)
+      .sort((a, b) => {
+        const movementDelta = Math.abs(b.movement) - Math.abs(a.movement);
+        if (movementDelta !== 0) return movementDelta;
+        return new Date(b.last_calculated_at).getTime() - new Date(a.last_calculated_at).getTime();
+      });
+
+    if (moved.length > 0) return moved;
+
+    return [...filteredFeed]
+      .sort((a, b) => new Date(b.last_calculated_at).getTime() - new Date(a.last_calculated_at).getTime())
+      .slice(0, 5)
+      .map((company) => ({ ...company, movement: 0 }));
+  }, [filteredFeed]);
 
   const [saveLimitHit, setSaveLimitHit] = useState(false);
   const handleSave = useCallback(async (companyId: string) => {
@@ -229,6 +272,17 @@ export function DashboardFeed({
             >
               {summaryStats.withHiringSignals} with hiring signals
             </button>
+            <div className="ml-auto flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span className="rounded-full border border-border bg-sidebar/80 px-3 py-1">
+                {freshnessStats.updatedToday} refreshed today
+              </span>
+              <span className="rounded-full border border-border bg-sidebar/80 px-3 py-1">
+                {freshnessStats.movedToday} rank movers
+              </span>
+              <span className="rounded-full border border-border bg-sidebar/80 px-3 py-1">
+                {freshnessStats.recentHeadlines} fresh headlines
+              </span>
+            </div>
           </div>
         </div>
       )}
@@ -259,13 +313,18 @@ export function DashboardFeed({
         />
       ) : (
         <>
-          {filteredFeed.length >= 1 && (
+          {movers.length >= 1 && (
             <section className="mb-10">
               <h2 className="mb-5 border-b border-border pb-3 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                Top momentum
+                {movers.some((company) => company.movement !== 0) ? "Top movers" : "Freshly updated"}
               </h2>
+              <p className="mb-4 text-sm text-secondary">
+                {movers.some((company) => company.movement !== 0)
+                  ? "Biggest rank changes and recently refreshed companies."
+                  : "Most recently recalculated companies while the ranking stays stable."}
+              </p>
               <div className="flex gap-5 overflow-x-auto pb-2 sm:grid sm:grid-cols-2 sm:overflow-visible lg:grid-cols-3">
-                {filteredFeed.slice(0, 5).map((company) => (
+                {movers.slice(0, 5).map((company) => (
                   <div
                     key={company.id}
                     className="min-w-[min(20rem,88vw)] shrink-0 sm:min-w-0 sm:shrink"

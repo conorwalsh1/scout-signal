@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { LandingRadar, type RadarLabel } from "./landing-radar";
+import { BetaCountdown } from "./beta-countdown";
+import { BetaRequestForm } from "./beta-request-form";
 
 export function LandingHeroWithRadar({
   radarLabels,
@@ -71,6 +73,10 @@ export function LandingHeroWithRadar({
                 {" · "}
                 Signals detected today <span className="font-semibold text-signal-green">{signalsDisplay}</span>
               </p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
+                <BetaCountdown />
+              </div>
+              <BetaRequestForm />
               <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row lg:justify-start">
                 <Link
                   href="/signup"

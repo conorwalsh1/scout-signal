@@ -72,60 +72,65 @@ Explain why they were contacted:
 - they appear to recruit into scaling teams
 - Scout Signal may help identify companies showing early hiring momentum
 
-## Primary Email Draft
+## Offer (Use This Positioning)
 
-Subject: Ireland agency beta for earlier hiring signals
+Use an outcome-led offer, not a generic beta ask:
+
+- "7-day Pro trial"
+- "I set up your top 10 target companies for you"
+- "You get one weekly shortlist: who to contact this week"
+
+Primary CTA:
+
+- "Reply with 10 company names and I will set this up this week."
+
+## Primary Email Draft (Outcome-Led)
+
+Subject: 7-day Pro trial for your agency desk
 
 Hi,
 
-I’m building Scout Signal, a lightweight product that helps recruiters spot companies showing early hiring momentum before that demand becomes obvious everywhere else.
+I run ScoutSignal and I am offering a small number of Ireland agencies a 7-day Pro trial.
 
-I’m reaching out because your agency looks like a strong fit for this kind of workflow, especially if you work with growing companies and need a better way to prioritize where to focus.
+I will set up your top 10 target companies for you and send one shortlist of who to contact this week based on early hiring momentum signals.
 
-The product is designed to surface signals like hiring acceleration, leadership hiring, and company activity in one place. I’m looking for a small number of Ireland-based agencies to try the beta and give blunt feedback on whether it would actually help with BD and recruiter prioritization.
+If useful, just reply with 10 company names and I will set it up this week.
 
-If that sounds relevant, I’d be happy to send over access and a short walkthrough.
-
-If you’d prefer not to hear from me again, just reply with `no` and I won’t follow up.
+If you would prefer no follow-up, reply `no` and I will close this out.
 
 Best,
-
 Conor
 
-## Shorter Version
+## Follow-Up (If No Reply, Day 3-4)
 
-Subject: Beta for Ireland recruitment agencies
+Subject: Quick follow-up on the 7-day Pro trial
 
 Hi,
 
-I’m building Scout Signal, a tool that helps recruiters spot companies starting to scale from early hiring signals.
+Quick follow-up in case this is relevant: I can run a 7-day Pro trial for your desk, set up 10 target companies, and send one shortlist of who looks worth contacting this week.
 
-Your agency looked like a good fit, so I wanted to ask if you’d be open to trying the beta. I’m mainly looking for honest feedback on whether it helps with prioritization and BD.
+If you want to try it, reply with 10 company names and I will set it up.
 
-If useful, I can send over access.
-
-If you’d prefer not to hear from me again, just reply with `no`.
+If not relevant, reply `no` and I will not follow up again.
 
 Best,
-
 Conor
 
 ## Tech / Startup Agency Variant
 
-Subject: Beta for agencies recruiting into startups and growth teams
+Subject: Trial for startup and growth hiring desks
 
 Hi,
 
-I’m building Scout Signal, a product that helps recruiters identify companies showing early growth and hiring momentum, especially before those signals become obvious across the market.
+Your desk looks strongly aligned with startup and growth-stage hiring, so I wanted to offer a 7-day Pro trial of ScoutSignal.
 
-I’m reaching out because your agency seems aligned with startup / growth-stage hiring, and I think the beta may be relevant if you’re trying to prioritize where demand is likely to emerge.
+I will set up 10 target companies for you and send a shortlist of where hiring momentum is building this week.
 
-If you’re open to it, I’d love to share access and get your honest take on whether the signals feel useful and credible.
+If you want to try it, reply with 10 company names.
 
-If you’d prefer not to hear from me again, just reply with `no`.
+If you would prefer no follow-up, reply `no`.
 
 Best,
-
 Conor
 
 ## Notes On GDPR / ePrivacy
