@@ -8,9 +8,17 @@
  * On Vercel, set CRON_SECRET in env and add a cron schedule in vercel.json.
  */
 import { NextRequest, NextResponse } from "next/server";
+import { completeCronRun, createCronRun, type CronTriggerSource } from "@/lib/cron-runs";
 
 export const maxDuration = 300;
 export const dynamic = "force-dynamic";
+
+function getTriggerSource(request: NextRequest): CronTriggerSource {
+  if (request.headers.get("x-vercel-cron") === "1") return "vercel_cron";
+  if (request.headers.get("authorization")) return "manual_auth";
+  if (request.nextUrl.searchParams.get("secret")) return "manual_query";
+  return "unknown";
+}
 
 function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.CRON_SECRET;
@@ -34,6 +42,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const runId = await createCronRun({
+    jobName: "process",
+    triggerSource: getTriggerSource(request),
+    deploymentHost: request.headers.get("host"),
+    details: {
+      path: request.nextUrl.pathname,
+    },
+  });
+
   try {
     const { run: runSignals } = await import("@/workers/run-signals");
     await runSignals();
@@ -41,6 +58,13 @@ export async function GET(request: NextRequest) {
     const { run: runScore } = await import("@/workers/run-score");
     await runScore();
 
+    await completeCronRun({
+      id: runId,
+      status: "succeeded",
+      details: {
+        mode: "signals_and_score",
+      },
+    });
     return NextResponse.json({
       ok: true,
       mode: "signals_and_score",
@@ -48,6 +72,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (e) {
     console.error("[cron/process]", e);
+    await completeCronRun({
+      id: runId,
+      status: "failed",
+      details: {
+        error: e instanceof Error ? e.message : String(e),
+      },
+    });
     return NextResponse.json(
       { ok: false, error: e instanceof Error ? e.message : String(e) },
       { status: 500 }

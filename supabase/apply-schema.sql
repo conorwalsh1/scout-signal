@@ -120,6 +120,20 @@ CREATE INDEX IF NOT EXISTS index_monitored_sources_type ON monitored_sources (so
 CREATE INDEX IF NOT EXISTS index_monitored_sources_active ON monitored_sources (active);
 CREATE INDEX IF NOT EXISTS index_monitored_sources_company ON monitored_sources (company_id);
 
+CREATE TABLE IF NOT EXISTS cron_runs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  job_name TEXT NOT NULL,
+  trigger_source TEXT NOT NULL,
+  status TEXT NOT NULL,
+  deployment_host TEXT,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  finished_at TIMESTAMPTZ,
+  details_json JSONB NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS index_cron_runs_job_name ON cron_runs (job_name);
+CREATE INDEX IF NOT EXISTS index_cron_runs_started_at ON cron_runs (started_at DESC);
+
 -- ========== RLS ==========
 ALTER TABLE companies ENABLE ROW LEVEL SECURITY;
 ALTER TABLE company_scores ENABLE ROW LEVEL SECURITY;

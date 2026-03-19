@@ -204,6 +204,39 @@ export async function getTopRankedForWeeklyPost(limit = 25): Promise<WeeklyRankR
 /** For radar labels: recent signals (company name + signal type). */
 export type RadarSignalLabel = { companyName: string; signalType: string };
 
+export type CronRunSummary = {
+  jobName: string;
+  triggerSource: string;
+  status: string;
+  deploymentHost: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+  details: Record<string, unknown>;
+};
+
+export async function getLatestCronRuns(): Promise<CronRunSummary[]> {
+  try {
+    const supabase = createServiceClient();
+    const { data } = await supabase
+      .from("cron_runs")
+      .select("job_name, trigger_source, status, deployment_host, started_at, finished_at, details_json")
+      .order("started_at", { ascending: false })
+      .limit(6);
+
+    return (data ?? []).map((row) => ({
+      jobName: row.job_name,
+      triggerSource: row.trigger_source,
+      status: row.status,
+      deploymentHost: row.deployment_host ?? null,
+      startedAt: row.started_at,
+      finishedAt: row.finished_at ?? null,
+      details: (row.details_json ?? {}) as Record<string, unknown>,
+    }));
+  } catch {
+    return [];
+  }
+}
+
 export async function getRadarSignalLabels(limit = 6): Promise<RadarSignalLabel[]> {
   const companies = await getLatestSignalCompanies(limit);
   return companies.map((c) => ({

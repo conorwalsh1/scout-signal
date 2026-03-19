@@ -125,7 +125,7 @@ This imports companies into `companies`, links each one in `company_sources` wit
 
 The pipeline (ingest → signals → score) can run on a schedule so the dashboard stays fresh without manual `npm run worker:all`.
 
-**On Vercel:** `vercel.json` defines a cron that hits `GET /api/cron/ingest` every 45 minutes. Set `CRON_SECRET` in the project’s Environment Variables; Vercel sends it when invoking the cron. The route runs the same logic as `worker:ingest`, `worker:signals`, and `worker:score` in sequence.
+**On Vercel:** `vercel.json` defines two production cron jobs: `GET /api/cron/ingest` at `08:00 UTC` and `GET /api/cron/process` at `10:00 UTC`. Set `CRON_SECRET` in the project’s Environment Variables. Each route now records a heartbeat row in `cron_runs`, so the latest scheduled and manual runs can be checked from the database instead of reconstructed only from logs.
 
 **Locally or other hosts:** Trigger the pipeline by calling the API with the secret (if `CRON_SECRET` is set):
 
@@ -182,7 +182,7 @@ npm run db:enrich-web -- --resume
 Signals come from the **pipeline**: ingestion (job boards, funding RSS) → events → signals → company scores. You must run it at least once:
 
 1. **Locally:** From the project root run `npm run worker:all`. Check the console: ingestion logs how many events were **inserted** vs **skipped (already exist)**. If you see `totalInserted: 0` and `totalSkippedAlreadyExist: 20` (or similar), events are already in the DB and signals/scores should exist from a previous run; if you see `totalInserted: 20` (or more), the run added new events and the signals/score steps will have updated the dashboard.
-2. **On Vercel:** The cron hits `/api/cron/ingest` every 45 minutes. Ensure `CRON_SECRET` and `SUPABASE_SERVICE_KEY` are set in the project’s Environment Variables so the pipeline can run.
+2. **On Vercel:** The scheduled jobs hit `/api/cron/ingest` at `08:00 UTC` and `/api/cron/process` at `10:00 UTC`. Ensure `CRON_SECRET` and `SUPABASE_SERVICE_KEY` are set in the project’s Environment Variables so the pipeline can run.
 
 After a successful run, refresh the dashboard; companies with job posts (e.g. from Greenhouse) or funding news should show non-zero scores and signal badges.
 

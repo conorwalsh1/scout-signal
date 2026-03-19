@@ -72,7 +72,7 @@ export default async function DashboardPage() {
             npm run worker:all
           </code>
           <p className="mt-2 text-xs text-muted-foreground">
-            Or trigger it via <strong>GET /api/cron/ingest</strong> (with <code>Authorization: Bearer CRON_SECRET</code>). On Vercel, the cron runs every 45 minutes automatically.
+            Or trigger it via <strong>GET /api/cron/ingest</strong> (with <code>Authorization: Bearer CRON_SECRET</code>). On Vercel, <strong>ingest</strong> runs at <strong>08:00 UTC</strong> and <strong>process</strong> runs at <strong>10:00 UTC</strong>.
           </p>
         </div>
       )}
