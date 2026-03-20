@@ -10,6 +10,7 @@
  *   npm run db:enrich-web -- --limit 100
  *   npm run db:enrich-web -- --offset 100
  *   npm run db:enrich-web -- --dry-run
+ *   npm run db:enrich-web -- --recheck-existing --top-score-limit 25 --dry-run
  */
 import { config } from "dotenv";
 
@@ -53,6 +54,11 @@ type ProgressState = {
   skipped: number;
   lastProcessedKey: string | null;
   updatedAt: string;
+};
+
+type ScoreRow = {
+  company_id: string;
+  score: number;
 };
 
 const SERPAPI_URL = "https://serpapi.com/search.json";
@@ -147,6 +153,15 @@ function countMatchingCompanyTokens(companyName: string, value: string): number 
   const normalizedValue = normalizeName(value);
   const tokens = normalizedCompany.split(" ").filter((token) => token.length > 2);
   return tokens.filter((token) => normalizedValue.includes(token)).length;
+}
+
+function getDomainMatchStrength(companyName: string, domain: string | null | undefined): number {
+  if (!domain) return 0;
+  const normalizedDomain = normalizeName(domain.replace(/\.[a-z]{2,}$/i, ""));
+  const normalizedCompany = normalizeName(companyName);
+  let score = countMatchingCompanyTokens(companyName, normalizedDomain);
+  if (normalizedDomain.includes(normalizedCompany)) score += 3;
+  return score;
 }
 
 async function inspectHomepage(url: string): Promise<{
@@ -429,6 +444,26 @@ async function fetchSourceHints(): Promise<Map<string, SourceMetadata>> {
   return hints;
 }
 
+async function fetchTopScoreCompanyIds(limit: number): Promise<Set<string>> {
+  if (limit <= 0) return new Set();
+
+  const supabase = createServiceClient();
+  const { data, error } = await supabase
+    .from("company_scores")
+    .select("company_id, score")
+    .order("score", { ascending: false })
+    .order("last_calculated_at", { ascending: false })
+    .limit(limit);
+
+  if (error) throw error;
+
+  return new Set(
+    ((data ?? []) as ScoreRow[])
+      .map((row) => row.company_id)
+      .filter(Boolean)
+  );
+}
+
 function pickCanonicalRow(rows: CompanyRow[]): CompanyRow {
   return [...rows].sort((a, b) => {
     const aHasSite = Number(Boolean(a.website || a.domain));
@@ -471,11 +506,16 @@ async function run() {
   const dryRun = hasFlag("--dry-run");
   const limit = Number(getArg("--limit") ?? "0");
   const offset = Number(getArg("--offset") ?? "0");
+  const recheckExisting = hasFlag("--recheck-existing");
+  const topScoreLimit = Number(getArg("--top-score-limit") ?? "0");
   const resume = hasFlag("--resume");
   const checkpointPath = getCheckpointPath();
   const checkpoint = resume ? loadCheckpoint(checkpointPath) : null;
 
-  const companies = await fetchAllCompanies();
+  const [companies, topScoreCompanyIds] = await Promise.all([
+    fetchAllCompanies(),
+    fetchTopScoreCompanyIds(topScoreLimit),
+  ]);
   const sourceHints = await fetchSourceHints();
   const grouped = new Map<string, CompanyRow[]>();
 
@@ -488,7 +528,13 @@ async function run() {
 
   let groups = Array.from(grouped.entries())
     .map(([key, rows]) => ({ key, rows }))
-    .filter(({ rows }) => rows.some((row) => !row.website || !row.domain))
+    .filter(({ rows }) => {
+      if (topScoreCompanyIds.size > 0) {
+        return rows.some((row) => topScoreCompanyIds.has(row.id));
+      }
+      if (recheckExisting) return true;
+      return rows.some((row) => !row.website || !row.domain);
+    })
     .sort((a, b) => a.key.localeCompare(b.key));
 
   const startIndex = checkpoint ? checkpoint.nextIndex : offset;
@@ -510,8 +556,10 @@ async function run() {
     let website = existing?.website ?? null;
     let domain = existing?.domain ?? null;
     const currentIndex = startIndex + processed;
+    const shouldRecheckGroup =
+      recheckExisting || (topScoreCompanyIds.size > 0 && rows.some((row) => topScoreCompanyIds.has(row.id)));
 
-    if (!website || !domain) {
+    if (shouldRecheckGroup || !website || !domain) {
       searched++;
       try {
         const result = await searchCompanyWebsiteWithFallback(sample.name, hint);
@@ -528,8 +576,22 @@ async function run() {
           processed++;
           continue;
         }
-        website = result.url;
-        domain = result.domain;
+        const currentDomainStrength = getDomainMatchStrength(sample.name, canonical.domain);
+        const proposedDomainStrength = getDomainMatchStrength(sample.name, result.domain);
+        const currentHasCompleteWeb = Boolean(canonical.website && canonical.domain);
+
+        if (
+          currentHasCompleteWeb
+          && shouldRecheckGroup
+          && currentDomainStrength > 0
+          && proposedDomainStrength < currentDomainStrength
+        ) {
+          website = canonical.website;
+          domain = canonical.domain;
+        } else {
+          website = result.url;
+          domain = result.domain;
+        }
       } catch (error) {
         console.warn("[enrich-web] Search failed", sample.name, String(error));
         skipped++;
@@ -567,8 +629,11 @@ async function run() {
       console.log(
         JSON.stringify({
           name: sample.name,
+          previousWebsite: canonical.website,
+          previousDomain: canonical.domain,
           website,
           domain,
+          rechecked: shouldRecheckGroup,
           wouldUpdateCount: wouldUpdate.length,
           companyIds: wouldUpdate.map((row) => row.id),
         })
@@ -602,6 +667,9 @@ async function run() {
             metadata: {
               company_name: sample.name,
               search_provider: "serpapi_duckduckgo_fallback",
+              previous_website: row.website,
+              previous_domain: row.domain,
+              rechecked_existing: shouldRecheckGroup,
             },
           });
         }

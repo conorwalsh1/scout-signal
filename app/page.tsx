@@ -216,7 +216,7 @@ export default async function HomePage() {
       <footer className="border-t border-border/50 px-4 py-8">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 text-xs text-muted-foreground">
           <Link
-            href="https://www.linkedin.com/in/scout-signal-1b78a63b7/"
+            href="https://www.linkedin.com/company/signal-scout-radar"
             className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card/30 no-underline transition-colors hover:border-signal-green/40 hover:text-foreground"
             target="_blank"
             rel="noopener noreferrer"
