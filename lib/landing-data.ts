@@ -15,7 +15,7 @@ export async function getLandingCompaniesCount(): Promise<number> {
   }
 }
 
-/** Count signals with occurred_at today (UTC). */
+/** Count signals generated today (UTC), based on insert time. */
 export async function getSignalsTodayCount(): Promise<number> {
   try {
     const supabase = createServiceClient();
@@ -23,8 +23,8 @@ export async function getSignalsTodayCount(): Promise<number> {
     const { count } = await supabase
       .from("signals")
       .select("id", { count: "exact", head: true })
-      .gte("occurred_at", `${today}T00:00:00.000Z`)
-      .lt("occurred_at", `${today}T23:59:59.999Z`);
+      .gte("created_at", `${today}T00:00:00.000Z`)
+      .lt("created_at", `${today}T23:59:59.999Z`);
     return count ?? 0;
   } catch {
     return 0;
