@@ -11,6 +11,15 @@ const COMPANY_LOGO_OVERRIDES: Record<string, string[]> = {
   "oaknorth": [
     "https://oaknorth.com/wp-content/uploads/sites/3/2025/11/ON-Logo-Site-icon-transparent-2-100x100.png",
   ],
+  "hopin": [
+    "https://cdn.prod.website-files.com/63696c1ead1d4f3e79645931/636a1f69243b24e2b80a97bf_favicon.svg",
+  ],
+  "evaconsultingsolutions.com": [
+    "https://www.evaconsultingsolutions.com/favicon.ico",
+  ],
+  "paceuathletics.com": [
+    "https://images.sidearmdev.com/convert?url=https%3a%2f%2fdxbhsrqyrr690.cloudfront.net%2fsidearm.nextgen.sites%2fpacesettersathletics.com%2fimages%2flogos%2fsite%2fsite.png&type=webp",
+  ],
   "wise": [
     "https://attraxcdnprod1-freshed3dgayb7c3.z01.azurefd.net/1481206/dd8bf376-7a75-43b5-8223-2248b4dcd27d/2023.17000.2078/Blob/favicon.ico",
   ],
