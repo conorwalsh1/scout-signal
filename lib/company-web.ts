@@ -8,14 +8,23 @@ export function getCompanySiteUrl(company: {
 }
 
 export function getCompanyLogoUrls(company: {
+  name?: string | null;
   website: string | null;
   domain?: string | null;
 }): string[] {
   const siteUrl = getCompanySiteUrl(company);
   const domain = company.domain ?? (siteUrl ? new URL(siteUrl).hostname.replace(/^www\./, "") : null);
-  if (!siteUrl && !domain) return [];
+  const logoDevToken = process.env.NEXT_PUBLIC_LOGO_DEV_TOKEN;
+  const encodedName = company.name?.trim() ? encodeURIComponent(company.name.trim()) : null;
+  if (!siteUrl && !domain && !encodedName) return [];
 
   const candidates = [
+    domain && logoDevToken
+      ? `https://img.logo.dev/${encodeURIComponent(domain)}?token=${encodeURIComponent(logoDevToken)}&size=128&format=webp&retina=true`
+      : null,
+    encodedName && logoDevToken
+      ? `https://img.logo.dev/${encodedName}?token=${encodeURIComponent(logoDevToken)}&size=128&format=webp&retina=true`
+      : null,
     domain ? `https://${domain}/favicon.ico` : null,
     domain ? `https://icons.duckduckgo.com/ip3/${encodeURIComponent(domain)}.ico` : null,
     siteUrl ? `https://www.google.com/s2/favicons?sz=128&domain_url=${encodeURIComponent(siteUrl)}` : null,
@@ -25,6 +34,7 @@ export function getCompanyLogoUrls(company: {
 }
 
 export function getCompanyLogoUrl(company: {
+  name?: string | null;
   website: string | null;
   domain?: string | null;
 }): string | null {

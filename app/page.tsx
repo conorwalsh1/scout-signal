@@ -25,7 +25,7 @@ export default async function HomePage() {
   ]);
 
   const displayCount = companiesCount > 0 ? companiesCount.toLocaleString() : "1,036";
-  const signalsDisplay = signalsToday > 0 ? signalsToday : 47;
+  const signalsDisplay = Math.max(0, signalsToday);
 
   return (
     <main className="min-h-screen bg-background text-foreground">

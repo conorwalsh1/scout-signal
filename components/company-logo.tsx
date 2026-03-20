@@ -26,7 +26,7 @@ export function CompanyLogo({
   className?: string;
   fallbackClassName?: string;
 }) {
-  const sources = useMemo(() => getCompanyLogoUrls({ website, domain }), [website, domain]);
+  const sources = useMemo(() => getCompanyLogoUrls({ name, website, domain }), [domain, name, website]);
   const [index, setIndex] = useState(0);
   const src = sources[index] ?? null;
 
