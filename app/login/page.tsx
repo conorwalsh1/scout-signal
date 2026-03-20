@@ -90,13 +90,13 @@ function LoginForm() {
             <div className="mb-3 inline-flex items-center gap-2">
               <Image
                 src="/brand-mark.png"
-                alt="ScoutSignal"
+                alt="Signal Scout"
                 width={18}
                 height={18}
                 className="h-[18px] w-[18px] object-contain"
                 priority
               />
-              <span className="text-sm font-semibold text-foreground-heading">ScoutSignal</span>
+              <span className="text-sm font-semibold text-foreground-heading">Signal Scout</span>
             </div>
             <h1 className="text-2xl font-bold text-foreground-heading">Log in</h1>
             <p className="mt-1 text-sm text-secondary">

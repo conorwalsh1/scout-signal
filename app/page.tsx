@@ -34,13 +34,13 @@ export default async function HomePage() {
           <Link href="/" className="inline-flex items-center gap-2 font-semibold text-foreground-heading no-underline">
             <Image
               src="/brand-mark.png"
-              alt="ScoutSignal"
+              alt="Signal Scout"
               width={18}
               height={18}
               className="h-[18px] w-[18px] object-contain"
               priority
             />
-            <span>ScoutSignal</span>
+            <span>Signal Scout</span>
           </Link>
           <nav className="flex items-center gap-4">
             <Link href="/pricing" className="text-sm font-medium text-secondary no-underline hover:text-foreground">
@@ -214,18 +214,30 @@ export default async function HomePage() {
       </section>
 
       <footer className="border-t border-border/50 px-4 py-8">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">
-          <Link href="/pricing" className="hover:text-foreground no-underline">Pricing</Link>
-          <Link href="/login" className="hover:text-foreground no-underline">Log in</Link>
-          <Link href="/signup" className="hover:text-foreground no-underline">Sign up</Link>
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-center gap-4 text-xs text-muted-foreground">
           <Link
             href="https://www.linkedin.com/in/scout-signal-1b78a63b7/"
-            className="hover:text-foreground no-underline"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-card/30 no-underline transition-colors hover:border-signal-green/40 hover:text-foreground"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="Signal Scout on LinkedIn"
+            title="Signal Scout on LinkedIn"
           >
-            LinkedIn
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="h-4 w-4"
+              aria-hidden="true"
+            >
+              <path d="M6.94 8.5a1.56 1.56 0 1 1 0-3.12 1.56 1.56 0 0 1 0 3.12zM5.5 9.75h2.88v8.75H5.5zM10.25 9.75h2.75v1.2h.04c.38-.72 1.32-1.48 2.72-1.48 2.9 0 3.44 1.9 3.44 4.36v4.67h-2.88v-4.14c0-.99-.02-2.26-1.38-2.26-1.38 0-1.6 1.07-1.6 2.18v4.22h-2.89z" />
+            </svg>
           </Link>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link href="/pricing" className="hover:text-foreground no-underline">Pricing</Link>
+            <Link href="/login" className="hover:text-foreground no-underline">Log in</Link>
+            <Link href="/signup" className="hover:text-foreground no-underline">Sign up</Link>
+          </div>
         </div>
       </footer>
     </main>
