@@ -1,7 +1,12 @@
 import { createServiceClient } from "@/lib/supabase/service";
 
 export type CronRunStatus = "started" | "succeeded" | "failed";
-export type CronTriggerSource = "vercel_cron" | "manual_auth" | "manual_query" | "unknown";
+export type CronTriggerSource =
+  | "vercel_cron"
+  | "github_actions"
+  | "manual_auth"
+  | "manual_query"
+  | "unknown";
 
 type CronRunDetails = Record<string, unknown>;
 
@@ -64,4 +69,3 @@ export async function completeCronRun(input: {
     console.error("[cron-runs] complete threw", error);
   }
 }
-

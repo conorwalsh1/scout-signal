@@ -26,4 +26,5 @@ jobs:
 
           curl --fail --show-error --silent \
             -H "Authorization: Bearer $CRON_SECRET" \
+            -H "x-cron-source: github_actions" \
             "$APP_URL/api/cron/ingest"

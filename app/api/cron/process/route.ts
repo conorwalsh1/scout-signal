@@ -15,6 +15,7 @@ export const dynamic = "force-dynamic";
 
 function getTriggerSource(request: NextRequest): CronTriggerSource {
   if (request.headers.get("x-vercel-cron") === "1") return "vercel_cron";
+  if (request.headers.get("x-cron-source") === "github_actions") return "github_actions";
   if (request.headers.get("authorization")) return "manual_auth";
   if (request.nextUrl.searchParams.get("secret")) return "manual_query";
   return "unknown";
