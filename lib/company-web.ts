@@ -1,3 +1,5 @@
+import { getCompanyLogoOverrideUrls } from "@/lib/company-logo-overrides";
+
 export function getCompanySiteUrl(company: {
   website: string | null;
   domain?: string | null;
@@ -19,6 +21,7 @@ export function getCompanyLogoUrls(company: {
   if (!siteUrl && !domain && !encodedName) return [];
 
   const candidates = [
+    ...getCompanyLogoOverrideUrls(company),
     domain && logoDevToken
       ? `https://img.logo.dev/${encodeURIComponent(domain)}?token=${encodeURIComponent(logoDevToken)}&size=128&format=webp&retina=true`
       : null,
