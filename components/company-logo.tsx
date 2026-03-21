@@ -5,12 +5,10 @@
 import { useMemo, useState } from "react";
 import { getCompanyLogoUrls } from "@/lib/company-web";
 
-function getInitials(name: string): string {
+function getFallbackLetter(name: string): string {
   const trimmed = name.trim();
   if (!trimmed) return "?";
-  const words = trimmed.split(/\s+/).filter(Boolean);
-  if (words.length >= 2) return `${words[0]?.[0] ?? ""}${words[1]?.[0] ?? ""}`.toUpperCase();
-  return trimmed.slice(0, 2).toUpperCase();
+  return trimmed.charAt(0).toUpperCase();
 }
 
 export function CompanyLogo({
@@ -31,7 +29,7 @@ export function CompanyLogo({
   const src = sources[index] ?? null;
 
   if (!src) {
-    return <span className={fallbackClassName}>{getInitials(name)}</span>;
+    return <span className={fallbackClassName}>{getFallbackLetter(name)}</span>;
   }
 
   return (
