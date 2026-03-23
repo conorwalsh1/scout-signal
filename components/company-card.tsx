@@ -251,7 +251,7 @@ export function CompanyCard({
         }}
         className="group relative flex cursor-pointer flex-col rounded-lg border border-border bg-card p-4 transition-all duration-200 hover:border-signal-green/50 hover:shadow-[0_6px_24px_rgba(0,0,0,0.25),0_0_0_1px_rgba(34,197,94,0.2)] hover:-translate-y-0.5"
       >
-        <div className="absolute right-3 top-3 z-10" onClick={(e) => e.stopPropagation()}>
+        <div className="absolute right-3 top-3 z-10 flex flex-col items-end gap-2" onClick={(e) => e.stopPropagation()}>
           <Button
             variant="outline"
             size="sm"
@@ -270,6 +270,21 @@ export function CompanyCard({
               {isSaved ? "Saved" : "Save"}
             </span>
           </Button>
+          {rankPosition != null ? (
+            <div className={`flex aspect-square w-[72px] flex-col items-center justify-center rounded-lg border bg-card/40 text-center ${rankBorderClass}`} style={rankDisplayStyle}>
+              <div className="font-mono text-base font-bold leading-none text-foreground">#{rankPosition}</div>
+              <div className={`mt-1 flex items-center gap-0.5 text-[9px] font-semibold ${rankMovementToneClass}`}>
+                {movementLabel && rankMovement != null ? (
+                  <>
+                    {rankMovement > 0 ? <IconArrowUp className="h-2.5 w-2.5" /> : <IconArrowDown className="h-2.5 w-2.5" />}
+                    {Math.abs(rankMovement)}
+                  </>
+                ) : (
+                  "—"
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
         <div className="flex items-start gap-3 pr-20">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
@@ -329,29 +344,6 @@ export function CompanyCard({
             )}
           </div>
         </div>
-        {rankPosition != null ? (
-          <div className={`mt-3 inline-flex min-w-[86px] rounded-md border bg-card/40 px-2.5 py-2 text-right ${rankBorderClass}`} style={rankDisplayStyle}>
-            <div className="w-full">
-              <div className="text-[10px] uppercase tracking-wide text-secondary">Rank</div>
-              <div className="mt-0.5 font-mono text-sm font-semibold leading-none text-foreground">
-                #{rankPosition}{totalRankedCount ? <span className="opacity-70"> / {totalRankedCount}</span> : null}
-              </div>
-              <div className={`mt-1 inline-flex items-center gap-1 text-[10px] font-semibold ${rankMovementToneClass}`}>
-                {movementLabel && rankMovement != null ? (
-                  <>
-                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-                    {movementLabel}
-                  </>
-                ) : (
-                  "No change"
-                )}
-                {rankPercentileLabel ? (
-                  <span className="ml-1 font-medium text-secondary">{rankPercentileLabel}</span>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        ) : null}
       </article>
     );
   }
@@ -369,7 +361,7 @@ export function CompanyCard({
       }}
       className="group relative cursor-pointer rounded-lg border border-border bg-card p-5 transition-all duration-200 hover:border-signal-green/50 hover:shadow-[0_6px_24px_rgba(0,0,0,0.25),0_0_0_1px_rgba(34,197,94,0.2)] hover:-translate-y-0.5"
     >
-      <div className="absolute right-4 top-4 z-10" onClick={(e) => e.stopPropagation()}>
+      <div className="absolute right-4 top-4 z-10 flex flex-col items-end gap-2" onClick={(e) => e.stopPropagation()}>
         <Button
           variant="outline"
           size="sm"
@@ -388,6 +380,21 @@ export function CompanyCard({
             {isSaved ? "Saved" : "Save"}
           </span>
         </Button>
+        {rankPosition != null ? (
+          <div className={`flex aspect-square w-[76px] flex-col items-center justify-center rounded-lg border bg-card/40 text-center ${rankBorderClass}`} style={rankDisplayStyle}>
+            <div className="font-mono text-lg font-bold leading-none text-foreground">#{rankPosition}</div>
+            <div className={`mt-1 flex items-center gap-0.5 text-[10px] font-semibold ${rankMovementToneClass}`}>
+              {movementLabel && rankMovement != null ? (
+                <>
+                  {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
+                  {Math.abs(rankMovement)}
+                </>
+              ) : (
+                "—"
+              )}
+            </div>
+          </div>
+        ) : null}
       </div>
 
       <div className="flex items-start gap-4 pr-24">
@@ -457,30 +464,6 @@ export function CompanyCard({
           </div>
         </div>
 
-        {/* Right: rank module */}
-        {rankPosition != null ? (
-          <div className="ml-auto flex shrink-0 items-start">
-            <div className={`min-w-[86px] rounded-md border bg-card/40 px-2.5 py-2 text-right text-xs ${rankBorderClass}`} style={rankDisplayStyle}>
-              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-80">Rank</div>
-              <div className="mt-0.5 font-mono text-sm font-semibold leading-none text-foreground">
-                #{rankPosition}{totalRankedCount ? <span className="text-xs font-medium opacity-70"> / {totalRankedCount}</span> : null}
-              </div>
-              <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovementToneClass}`}>
-                {movementLabel && rankMovement != null ? (
-                  <>
-                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-                    {movementLabel}
-                  </>
-                ) : (
-                  "No change"
-                )}
-                {rankPercentileLabel ? (
-                  <span className="ml-1 font-medium text-secondary">{rankPercentileLabel}</span>
-                ) : null}
-              </div>
-            </div>
-          </div>
-        ) : null}
       </div>
 
       {/* Mobile: why this matters + summary below */}

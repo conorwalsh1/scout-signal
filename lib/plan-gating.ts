@@ -8,17 +8,17 @@ export const BASIC_SAVED_LIMIT = 25;
 
 export type Plan = "free" | "basic" | "pro";
 
-const PRO_ALIASES = new Set(["pro", "founder_pro", "founder pro", "founding_pro"]);
+const PRO_ALIASES = new Set(["pro", "basic", "founder_pro", "founder pro", "founding_pro"]);
 
 /**
  * Normalize any DB plan value to the canonical Plan type.
- * Treats all Founder Pro variants as "pro".
+ * Treats all paid variants (including legacy "basic") as "pro" since
+ * the pricing now has only Free and Founder Pro.
  */
 export function normalizePlan(raw: string | null | undefined): Plan {
   if (!raw) return "free";
   const lower = raw.trim().toLowerCase();
   if (PRO_ALIASES.has(lower)) return "pro";
-  if (lower === "basic") return "basic";
   return "free";
 }
 
