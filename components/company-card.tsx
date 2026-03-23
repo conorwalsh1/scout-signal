@@ -397,62 +397,58 @@ export function CompanyCard({
         ) : null}
       </div>
 
-      <div className="flex items-start gap-4 pr-24">
-        {/* Left: identity */}
-        <div className="flex min-w-0 flex-1 items-start gap-3">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
-            <CompanyLogo name={name} website={website} domain={domain} className="h-full w-full object-contain" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <span className="font-semibold text-foreground-heading">{name}</span>
-            {siteUrl ? (
-              <a
-                href={siteUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={(e) => e.stopPropagation()}
-                className="mt-0.5 inline-flex items-center gap-1 text-xs text-secondary hover:underline"
-              >
-                {domain ?? siteUrl}
-                <IconExternalLink className="h-3 w-3" />
-              </a>
-            ) : (
-              <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-secondary">
-                <IconGlobe className="h-3 w-3" />
-                Profile being enriched
-              </span>
-            )}
-            <div className="mt-2">
-              <ScoreBadge score={score} />
-            </div>
-          </div>
+      {/* Header: identity row */}
+      <div className="flex items-start gap-3 pr-24">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
+          <CompanyLogo name={name} website={website} domain={domain} className="h-full w-full object-contain" />
         </div>
-
-        {/* Middle: why this matters + insight (scan-first) */}
-        <div className="hidden min-w-0 flex-[1.2] flex-col gap-1 sm:flex">
-          {fundingSnapshot ? (
-            <>
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-signal-green">Funding signal</p>
-              <p className="text-sm font-medium text-foreground line-clamp-1">
-                {plan === "pro" ? fundingSnapshot : <ProPreviewInline text={fundingSnapshot} maxChars={35} />}
-              </p>
-            </>
-          ) : null}
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
-          <p className="text-sm font-medium text-foreground line-clamp-1">
-            {plan === "pro" ? summary : <ProPreviewInline text={summary} maxChars={45} />}
-          </p>
-          {plan === "pro" ? (
-            <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
+        <div className="min-w-0 flex-1">
+          <span className="font-semibold text-foreground-heading">{name}</span>
+          {siteUrl ? (
+            <a
+              href={siteUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="mt-0.5 inline-flex items-center gap-1 text-xs text-secondary hover:underline"
+            >
+              {domain ?? siteUrl}
+              <IconExternalLink className="h-3 w-3" />
+            </a>
           ) : (
-            <p className="text-xs text-secondary line-clamp-1">
-              <ProPreviewInline text={outreachAngle} maxChars={40} />
-            </p>
+            <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-secondary">
+              <IconGlobe className="h-3 w-3" />
+              Profile being enriched
+            </span>
           )}
-          <p className="text-xs text-secondary">
-            {metadataParts.join(" · ")}
+        </div>
+      </div>
+
+      {/* Signal content: always below header + rank */}
+      <div className="mt-3 flex flex-col gap-1">
+        {fundingSnapshot ? (
+          <>
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-signal-green">Funding signal</p>
+            <p className="text-sm font-medium text-foreground line-clamp-1">
+              {plan === "pro" ? fundingSnapshot : <ProPreviewInline text={fundingSnapshot} maxChars={50} />}
+            </p>
+          </>
+        ) : null}
+        <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
+        <p className="text-sm font-medium text-foreground line-clamp-2">
+          {plan === "pro" ? summary : <ProPreviewInline text={summary} maxChars={60} />}
+        </p>
+        {plan === "pro" ? (
+          <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
+        ) : (
+          <p className="text-xs text-secondary line-clamp-1">
+            <ProPreviewInline text={outreachAngle} maxChars={50} />
           </p>
-          <div className="mt-1 flex flex-wrap items-center gap-1">
+        )}
+        <p className="text-xs text-secondary">{metadataParts.join(" · ")}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <ScoreBadge score={score} />
+          <div className="flex flex-wrap items-center gap-1">
             {badgeIds.map((bid) => (
               <CompanyBadge key={bid} badgeId={bid} />
             ))}
@@ -462,33 +458,6 @@ export function CompanyCard({
               </span>
             )}
           </div>
-        </div>
-
-      </div>
-
-      {/* Mobile: why this matters + summary below */}
-      <div className="mt-3 flex flex-col gap-1 sm:hidden">
-        <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
-        <p className="text-sm text-foreground line-clamp-1">
-          {plan === "pro" ? summary : <ProPreviewInline text={summary} maxChars={40} />}
-        </p>
-        {plan === "pro" ? (
-          <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
-        ) : (
-          <p className="text-xs text-secondary line-clamp-1">
-            <ProPreviewInline text={outreachAngle} maxChars={35} />
-          </p>
-        )}
-        <p className="text-xs text-secondary">{metadataParts.join(" · ")}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-1">
-          {badgeIds.map((bid) => (
-            <CompanyBadge key={bid} badgeId={bid} />
-          ))}
-          {extraBadgesCount > 0 && (
-            <span className="inline-flex items-center rounded-md border border-border bg-muted/60 px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-secondary">
-              +{extraBadgesCount}
-            </span>
-          )}
         </div>
       </div>
     </article>
