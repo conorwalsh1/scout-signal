@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createServiceClient } from "@/lib/supabase/service";
-import type { Plan } from "@/lib/plan-gating";
+import { normalizePlan, type Plan } from "@/lib/plan-gating";
 
 const relevant = new Set([
   "checkout.session.completed",
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   const supabase = createServiceClient();
   const obj = event.data?.object as { metadata?: { user_id?: string; plan?: string }; client_reference_id?: string; status?: string };
   const userId = obj?.metadata?.user_id ?? (event.type === "checkout.session.completed" ? obj?.client_reference_id : undefined);
-  const purchasedPlan = (obj?.metadata?.plan === "basic" || obj?.metadata?.plan === "pro" ? obj.metadata.plan : "pro") as Exclude<Plan, "free">;
+  const purchasedPlan = normalizePlan(obj?.metadata?.plan) === "free" ? "pro" : normalizePlan(obj?.metadata?.plan) as Exclude<Plan, "free">;
 
   if (event.type === "checkout.session.completed" && userId) {
     const { error } = await supabase

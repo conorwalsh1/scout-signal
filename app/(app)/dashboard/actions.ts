@@ -3,12 +3,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { ensureAppUser } from "@/lib/auth/ensure-user";
-import { savedLimit, type Plan } from "@/lib/plan-gating";
+import { savedLimit, normalizePlan, type Plan } from "@/lib/plan-gating";
 
 async function getUserPlan(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<Plan> {
   const { data } = await supabase.from("users").select("plan").eq("id", userId).single();
-  if (data?.plan === "pro" || data?.plan === "basic" || data?.plan === "free") return data.plan as Plan;
-  return "free";
+  return normalizePlan(data?.plan);
 }
 
 export async function saveCompany(companyId: string) {

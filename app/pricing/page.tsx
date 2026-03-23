@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { normalizePlan } from "@/lib/plan-gating";
 
 // Aligned with actual app behavior. See docs/PRICING_TABLE_AUDIT.md.
 const FEATURES = [
@@ -25,7 +26,7 @@ export default async function PricingPage() {
   const { data: profile } = user
     ? await supabase.from("users").select("plan").eq("id", user.id).single()
     : { data: null };
-  const currentPlan = (profile?.plan ?? "free") as "free" | "basic" | "pro";
+  const currentPlan = normalizePlan(profile?.plan);
 
   return (
     <main className="min-h-screen p-6 md:p-10">
@@ -37,8 +38,7 @@ export default async function PricingPage() {
         <div className="mb-8 rounded-xl border border-border bg-card/60 px-4 py-3 text-sm text-secondary">
           {user ? (
             <span>
-              You&apos;re signed in. Choosing <span className="font-medium text-foreground">Basic</span> or{" "}
-              <span className="font-medium text-foreground">Pro</span> will send you to Stripe Checkout.
+              You&apos;re signed in. Choosing <span className="font-medium text-foreground">Founder Pro</span> will send you to Stripe Checkout.
             </span>
           ) : (
             <span>

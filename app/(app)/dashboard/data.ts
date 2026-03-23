@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createServiceClient } from "@/lib/supabase/service";
 import { ensureAppUser } from "@/lib/auth/ensure-user";
 import { isAdmin } from "@/lib/auth/admin";
-import { feedLimit, savedLimit, type Plan } from "@/lib/plan-gating";
+import { feedLimit, savedLimit, normalizePlan, type Plan } from "@/lib/plan-gating";
 import { dedupeCompaniesByName, filterLiveCompanies, sortCompaniesForDisplay } from "@/lib/company-selection";
 import { filterLaunchReadyCompanies } from "@/lib/beta-readiness";
 import { PRO_ONLY_BADGES, getCompanyBadgesForPlan } from "@/lib/badges";
@@ -78,8 +78,7 @@ const ADMIN_FEED_LIMIT = 10_000;
 
 async function getUserPlan(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<Plan> {
   const { data } = await supabase.from("users").select("plan").eq("id", userId).single();
-  if (data?.plan === "pro" || data?.plan === "basic" || data?.plan === "free") return data.plan as Plan;
-  return "free";
+  return normalizePlan(data?.plan);
 }
 
 export async function getDashboardFeed(limit = 50) {

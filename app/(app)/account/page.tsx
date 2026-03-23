@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { ensureAppUser } from "@/lib/auth/ensure-user";
+import { normalizePlan } from "@/lib/plan-gating";
 import { Button } from "@/components/ui/button";
 
 export default async function AccountPage() {
@@ -10,7 +11,8 @@ export default async function AccountPage() {
   const { data: profile } = user
     ? await supabase.from("users").select("plan").eq("id", user.id).single()
     : { data: null };
-  const plan = profile?.plan === "pro" ? "Pro" : profile?.plan === "basic" ? "Basic" : "Free";
+  const normalizedPlan = normalizePlan(profile?.plan);
+  const plan = normalizedPlan === "pro" ? "Founder Pro" : normalizedPlan === "basic" ? "Basic" : "Free";
 
   return (
     <div>
@@ -23,10 +25,10 @@ export default async function AccountPage() {
         <p>
           <span className="font-medium text-foreground">Plan:</span> {plan}
         </p>
-        {plan !== "Pro" && (
+        {plan !== "Founder Pro" && (
           <p className="pt-4">
             <Link href="/pricing">
-              <Button>{plan === "Free" ? "Choose a paid plan" : "Upgrade to Pro"}</Button>
+              <Button>{plan === "Free" ? "Choose a paid plan" : "Upgrade to Founder Pro"}</Button>
             </Link>
           </p>
         )}

@@ -24,7 +24,8 @@ import {
 import { BADGES, getCompanyBadgesForPlan } from "@/lib/badges";
 import { CompanyBadge } from "@/components/company-badge";
 import { formatDaysAgo, getProvenanceInfo, rankProvenanceSourceTypes } from "@/lib/provenance";
-import type { Plan, ScoreComponents } from "@/types/database";
+import type { ScoreComponents } from "@/types/database";
+import { normalizePlan } from "@/lib/plan-gating";
 import { createClient } from "@/lib/supabase/server";
 import { ProPreviewBlock } from "@/components/pro-preview";
 import { getCompanyRelationshipContacts } from "./relationship-actions";
@@ -55,7 +56,7 @@ export default async function CompanyDetailPage({
   const { data: profile } = user
     ? await supabase.from("users").select("plan").eq("id", user.id).single()
     : { data: null };
-  const plan = (profile?.plan ?? "free") as Plan;
+  const plan = normalizePlan(profile?.plan);
   const [company, signals, events, jobPostEvents30d, rankContext, saved, isAdmin, savedCount] = await Promise.all([
     getCompanyById(id),
     getCompanySignals(id),
