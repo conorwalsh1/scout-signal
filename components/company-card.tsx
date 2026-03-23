@@ -248,74 +248,51 @@ export function CompanyCard({
             router.push(`/companies/${id}`);
           }
         }}
-        className="group flex cursor-pointer flex-col rounded-lg border border-border bg-card p-4 transition-all duration-200 hover:border-signal-green/50 hover:shadow-[0_6px_24px_rgba(0,0,0,0.25),0_0_0_1px_rgba(34,197,94,0.2)] hover:-translate-y-0.5"
+        className="group relative flex cursor-pointer flex-col rounded-lg border border-border bg-card p-4 transition-all duration-200 hover:border-signal-green/50 hover:shadow-[0_6px_24px_rgba(0,0,0,0.25),0_0_0_1px_rgba(34,197,94,0.2)] hover:-translate-y-0.5"
       >
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
-              <CompanyLogo name={name} website={website} domain={domain} className="h-full w-full object-contain" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <span className="block truncate font-semibold text-foreground-heading">{name}</span>
-              {siteUrl ? (
-                <a
-                  href={siteUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="mt-0.5 inline-flex items-center gap-1 truncate text-xs text-secondary hover:underline"
-                >
-                  <span className="truncate">{domain ?? siteUrl}</span>
-                  <IconExternalLink className="h-3 w-3 shrink-0" />
-                </a>
-              ) : (
-                <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-secondary">
-                  <IconGlobe className="h-3 w-3" />
-                  Profile being enriched
-                </span>
-              )}
-            </div>
+        <div className="absolute right-3 top-3 z-10" onClick={(e) => e.stopPropagation()}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              isSaved ? onUnsave(id) : onSave(id);
+            }}
+            className={
+              isSaved
+                ? "h-8 px-2.5 text-xs bg-[rgba(34,197,94,0.10)] hover:bg-[rgba(34,197,94,0.14)] border-signal-green/30 text-foreground"
+                : "h-8 px-2.5 text-xs bg-card/30 hover:bg-card/50 text-foreground border-border"
+            }
+          >
+            <span className="inline-flex items-center gap-1.5">
+              <IconBookmark className={isSaved ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={isSaved} />
+              {isSaved ? "Saved" : "Save"}
+            </span>
+          </Button>
+        </div>
+        <div className="flex items-start gap-3 pr-20">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
+            <CompanyLogo name={name} website={website} domain={domain} className="h-full w-full object-contain" />
           </div>
-          <div className="flex shrink-0 items-start gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                isSaved ? onUnsave(id) : onSave(id);
-              }}
-              className={
-                isSaved
-                  ? "h-8 px-2.5 text-xs bg-[rgba(34,197,94,0.10)] hover:bg-[rgba(34,197,94,0.14)] border-signal-green/30 text-foreground"
-                  : "h-8 px-2.5 text-xs bg-card/30 hover:bg-card/50 text-foreground border-border"
-              }
-            >
-              <span className="inline-flex items-center gap-1.5">
-                <IconBookmark className={isSaved ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={isSaved} />
-                {isSaved ? "Saved" : "Save"}
+          <div className="min-w-0 flex-1">
+            <span className="block truncate font-semibold text-foreground-heading">{name}</span>
+            {siteUrl ? (
+              <a
+                href={siteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="mt-0.5 inline-flex items-center gap-1 truncate text-xs text-secondary hover:underline"
+              >
+                <span className="truncate">{domain ?? siteUrl}</span>
+                <IconExternalLink className="h-3 w-3 shrink-0" />
+              </a>
+            ) : (
+              <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-secondary">
+                <IconGlobe className="h-3 w-3" />
+                Profile being enriched
               </span>
-            </Button>
-            {rankPosition != null ? (
-              <div className={`min-w-[86px] rounded-md border bg-card/40 px-2.5 py-2 text-right ${rankBorderClass}`} style={rankDisplayStyle}>
-                <div className="text-[10px] uppercase tracking-wide text-secondary">Rank</div>
-                <div className="mt-0.5 font-mono text-sm font-semibold leading-none text-foreground">
-                  #{rankPosition}{totalRankedCount ? <span className="opacity-70"> / {totalRankedCount}</span> : null}
-                </div>
-                <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovementToneClass}`}>
-                  {movementLabel && rankMovement != null ? (
-                    <>
-                      {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-                      {movementLabel}
-                    </>
-                  ) : (
-                    "No change"
-                  )}
-                  {rankPercentileLabel ? (
-                    <span className="ml-1 font-medium text-secondary">{rankPercentileLabel}</span>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
+            )}
           </div>
         </div>
         {fundingSnapshot ? (
@@ -341,6 +318,29 @@ export function CompanyCard({
             )}
           </div>
         </div>
+        {rankPosition != null ? (
+          <div className={`mt-3 inline-flex min-w-[86px] rounded-md border bg-card/40 px-2.5 py-2 text-right ${rankBorderClass}`} style={rankDisplayStyle}>
+            <div className="w-full">
+              <div className="text-[10px] uppercase tracking-wide text-secondary">Rank</div>
+              <div className="mt-0.5 font-mono text-sm font-semibold leading-none text-foreground">
+                #{rankPosition}{totalRankedCount ? <span className="opacity-70"> / {totalRankedCount}</span> : null}
+              </div>
+              <div className={`mt-1 inline-flex items-center gap-1 text-[10px] font-semibold ${rankMovementToneClass}`}>
+                {movementLabel && rankMovement != null ? (
+                  <>
+                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
+                    {movementLabel}
+                  </>
+                ) : (
+                  "No change"
+                )}
+                {rankPercentileLabel ? (
+                  <span className="ml-1 font-medium text-secondary">{rankPercentileLabel}</span>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
       </article>
     );
   }
@@ -356,9 +356,30 @@ export function CompanyCard({
           router.push(`/companies/${id}`);
         }
       }}
-      className="group cursor-pointer rounded-lg border border-border bg-card p-5 transition-all duration-200 hover:border-signal-green/50 hover:shadow-[0_6px_24px_rgba(0,0,0,0.25),0_0_0_1px_rgba(34,197,94,0.2)] hover:-translate-y-0.5"
+      className="group relative cursor-pointer rounded-lg border border-border bg-card p-5 transition-all duration-200 hover:border-signal-green/50 hover:shadow-[0_6px_24px_rgba(0,0,0,0.25),0_0_0_1px_rgba(34,197,94,0.2)] hover:-translate-y-0.5"
     >
-      <div className="flex items-start gap-4">
+      <div className="absolute right-4 top-4 z-10" onClick={(e) => e.stopPropagation()}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            isSaved ? onUnsave(id) : onSave(id);
+          }}
+          className={
+            isSaved
+              ? "h-9 px-3 bg-[rgba(34,197,94,0.10)] hover:bg-[rgba(34,197,94,0.14)] border-signal-green/30 text-foreground"
+              : "h-9 px-3 bg-card/30 hover:bg-card/50 text-foreground border-border"
+          }
+        >
+          <span className="inline-flex items-center gap-2">
+            <IconBookmark className={isSaved ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={isSaved} />
+            {isSaved ? "Saved" : "Save"}
+          </span>
+        </Button>
+      </div>
+
+      <div className="flex items-start gap-4 pr-24">
         {/* Left: identity */}
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
@@ -415,47 +436,30 @@ export function CompanyCard({
           </div>
         </div>
 
-        {/* Right: compact rank + clear actions */}
-        <div className="ml-auto flex shrink-0 items-start gap-3" onClick={(e) => e.stopPropagation()}>
-          <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => (isSaved ? onUnsave(id) : onSave(id))}
-              className={
-                isSaved
-                  ? "h-9 px-3 bg-[rgba(34,197,94,0.10)] hover:bg-[rgba(34,197,94,0.14)] border-signal-green/30 text-foreground"
-                  : "h-9 px-3 bg-card/30 hover:bg-card/50 text-foreground border-border"
-              }
-            >
-              <span className="inline-flex items-center gap-2">
-                <IconBookmark className={isSaved ? "h-4 w-4 text-signal-green" : "h-4 w-4"} filled={isSaved} />
-                {isSaved ? "Saved" : "Save"}
-              </span>
-            </Button>
-            {rankPosition != null ? (
-              <div className={`min-w-[86px] rounded-md border bg-card/40 px-2.5 py-2 text-right text-xs ${rankBorderClass}`} style={rankDisplayStyle}>
-                <div className="text-[10px] font-semibold uppercase tracking-wide opacity-80">Rank</div>
-                <div className="mt-0.5 font-mono text-sm font-semibold leading-none text-foreground">
-                  #{rankPosition}{totalRankedCount ? <span className="text-xs font-medium opacity-70"> / {totalRankedCount}</span> : null}
-                </div>
-                <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovementToneClass}`}>
-                  {movementLabel && rankMovement != null ? (
-                    <>
-                      {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-                      {movementLabel}
-                    </>
-                  ) : (
-                    "No change"
-                  )}
-                  {rankPercentileLabel ? (
-                    <span className="ml-1 font-medium text-secondary">{rankPercentileLabel}</span>
-                  ) : null}
-                </div>
+        {/* Right: rank module */}
+        {rankPosition != null ? (
+          <div className="ml-auto flex shrink-0 items-start">
+            <div className={`min-w-[86px] rounded-md border bg-card/40 px-2.5 py-2 text-right text-xs ${rankBorderClass}`} style={rankDisplayStyle}>
+              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-80">Rank</div>
+              <div className="mt-0.5 font-mono text-sm font-semibold leading-none text-foreground">
+                #{rankPosition}{totalRankedCount ? <span className="text-xs font-medium opacity-70"> / {totalRankedCount}</span> : null}
               </div>
-            ) : null}
+              <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovementToneClass}`}>
+                {movementLabel && rankMovement != null ? (
+                  <>
+                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
+                    {movementLabel}
+                  </>
+                ) : (
+                  "No change"
+                )}
+                {rankPercentileLabel ? (
+                  <span className="ml-1 font-medium text-secondary">{rankPercentileLabel}</span>
+                ) : null}
+              </div>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
 
       {/* Mobile: why this matters + summary below */}

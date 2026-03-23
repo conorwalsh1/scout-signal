@@ -97,7 +97,7 @@ export default async function PricingPage() {
               €29.99 <span className="text-sm font-normal text-muted-foreground">/ month</span>
             </p>
             <p className="mt-3 text-sm text-secondary">
-              Validation-stage pricing for agency desks tracking 30–50+ companies. Prioritise Series A-C momentum with supporting signals like <span className="font-medium text-foreground">Exec signal</span> and <span className="font-medium text-foreground">Hypergrowth</span>.
+              Built for agency recruiters tracking high-growth companies. Identify newly funded Series A-C businesses and act before hiring demand becomes obvious.
             </p>
             <div className="mt-auto pt-6">
               {user ? (
