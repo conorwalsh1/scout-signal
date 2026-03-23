@@ -257,31 +257,7 @@ export function CompanyCard({
               )}
             </div>
           </div>
-          <div className="flex shrink-0 items-center gap-2" onClick={(e) => e.stopPropagation()}>
-            {rankPosition != null ? (
-              <div className="rounded-md border px-2 py-1 text-right text-xs" style={rankDisplayStyle}>
-                <div className="font-mono font-semibold leading-none">
-                  #{rankPosition}{totalRankedCount ? <span className="opacity-70"> / {totalRankedCount}</span> : null}
-                </div>
-                {movementLabel && rankMovement != null ? (
-                  <div className={`mt-1 inline-flex items-center gap-1 text-[10px] font-semibold ${rankMovement > 0 ? "text-signal-green" : "text-red-400"}`}>
-                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-                    {movementLabel}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                router.push(`/companies/${id}`);
-              }}
-              className="h-8 px-2.5 text-xs bg-card/30 hover:bg-card/50 text-foreground border-border"
-            >
-              View
-            </Button>
+          <div className="flex shrink-0 items-start gap-2" onClick={(e) => e.stopPropagation()}>
             <Button
               variant="outline"
               size="sm"
@@ -300,6 +276,19 @@ export function CompanyCard({
                 {isSaved ? "Saved" : "Save"}
               </span>
             </Button>
+            {rankPosition != null ? (
+              <div className="rounded-md border px-2 py-1 text-right text-xs" style={rankDisplayStyle}>
+                <div className="font-mono font-semibold leading-none">
+                  #{rankPosition}{totalRankedCount ? <span className="opacity-70"> / {totalRankedCount}</span> : null}
+                </div>
+                {movementLabel && rankMovement != null ? (
+                  <div className={`mt-1 inline-flex items-center gap-1 text-[10px] font-semibold ${rankMovement > 0 ? "text-signal-green" : "text-red-400"}`}>
+                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
+                    {movementLabel}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
         {fundingSnapshot ? (
@@ -401,29 +390,7 @@ export function CompanyCard({
 
         {/* Right: compact rank + clear actions */}
         <div className="ml-auto flex shrink-0 items-start gap-3" onClick={(e) => e.stopPropagation()}>
-          {rankPosition != null ? (
-            <div className="rounded-lg border px-3 py-2 text-right text-xs" style={rankDisplayStyle}>
-              <div className="text-[10px] font-semibold uppercase tracking-wide opacity-80">Rank</div>
-              <div className="mt-0.5 font-mono text-lg font-bold leading-none">
-                #{rankPosition}{totalRankedCount ? <span className="text-xs font-medium opacity-70"> / {totalRankedCount}</span> : null}
-              </div>
-              {movementLabel && rankMovement != null ? (
-                <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovement > 0 ? "text-signal-green" : "text-red-400"}`}>
-                  {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-                  {movementLabel}
-                </div>
-              ) : null}
-            </div>
-          ) : null}
           <div className="flex flex-col gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/companies/${id}`)}
-              className="h-9 px-3 bg-card/30 hover:bg-card/50 text-foreground border-border"
-            >
-              View
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -439,6 +406,20 @@ export function CompanyCard({
                 {isSaved ? "Saved" : "Save"}
               </span>
             </Button>
+            {rankPosition != null ? (
+              <div className="rounded-lg border px-3 py-2 text-right text-xs" style={rankDisplayStyle}>
+                <div className="text-[10px] font-semibold uppercase tracking-wide opacity-80">Rank</div>
+                <div className="mt-0.5 font-mono text-lg font-bold leading-none">
+                  #{rankPosition}{totalRankedCount ? <span className="text-xs font-medium opacity-70"> / {totalRankedCount}</span> : null}
+                </div>
+                {movementLabel && rankMovement != null ? (
+                  <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovement > 0 ? "text-signal-green" : "text-red-400"}`}>
+                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
+                    {movementLabel}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

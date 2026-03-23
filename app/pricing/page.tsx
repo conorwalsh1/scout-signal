@@ -3,20 +3,20 @@ import { createClient } from "@/lib/supabase/server";
 
 // Aligned with actual app behavior. See docs/PRICING_TABLE_AUDIT.md.
 const FEATURES = [
-  { feature: "Funding feed (Series A-C focus)", free: "Live sample feed", basic: "Up to 100 companies", pro: "Up to 500 companies" },
-  { feature: "Funding context (round/amount/investors)", free: "Preview only", basic: "Yes", pro: "Yes" },
-  { feature: "Recruiter-ready interpretation", free: "Preview only", basic: "Yes", pro: "Yes" },
-  { feature: "Outreach timing guidance", free: "Preview only", basic: "Yes", pro: "Yes" },
-  { feature: "Saved / tracked companies", free: "10", basic: "25", pro: "1,000" },
-  { feature: "Executive + expansion signals", free: "No", basic: "Yes", pro: "Yes" },
-  { feature: "Funding-first ranking tools", free: "Yes", basic: "Yes", pro: "Yes" },
-  { feature: "Signal timeline + provenance", free: "Yes", basic: "Yes", pro: "Yes" },
-  { feature: "Daily intelligence feed", free: "Yes", basic: "Yes", pro: "Yes" },
-  { feature: "Alerts", free: "In-app setup", basic: "In-app setup", pro: "In-app setup (email delivery coming)" },
-  { feature: "Advanced signal filters", free: "Yes", basic: "Yes", pro: "Yes" },
-  { feature: "Data export", free: "No", basic: "No", pro: "Coming soon" },
-  { feature: "Capital-to-hiring trend analytics", free: "No", basic: "—", pro: "Coming soon" },
-  { feature: "Signal score breakdown", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Funding feed (Series A-C focus)", free: "Live sample feed", pro: "Up to 500 companies" },
+  { feature: "Funding context (round/amount/investors)", free: "Preview only", pro: "Yes" },
+  { feature: "Recruiter-ready interpretation", free: "Preview only", pro: "Yes" },
+  { feature: "Outreach timing guidance", free: "Preview only", pro: "Yes" },
+  { feature: "Saved / tracked companies", free: "10", pro: "1,000" },
+  { feature: "Executive + expansion signals", free: "No", pro: "Yes" },
+  { feature: "Funding-first ranking tools", free: "Yes", pro: "Yes" },
+  { feature: "Signal timeline + provenance", free: "Yes", pro: "Yes" },
+  { feature: "Daily intelligence feed", free: "Yes", pro: "Yes" },
+  { feature: "Alerts", free: "In-app setup", pro: "In-app setup (email delivery coming)" },
+  { feature: "Advanced signal filters", free: "Yes", pro: "Yes" },
+  { feature: "Data export", free: "No", pro: "Coming soon" },
+  { feature: "Capital-to-hiring trend analytics", free: "No", pro: "Coming soon" },
+  { feature: "Signal score breakdown", free: "Yes", pro: "Yes" },
 ] as const;
 
 export default async function PricingPage() {
@@ -47,7 +47,7 @@ export default async function PricingPage() {
           )}
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 gap-6 mb-12">
           {/* Free */}
           <div className="rounded-xl border border-border bg-card p-6 md:p-8 flex flex-col min-h-[220px]">
             <h2 className="text-xl font-semibold text-foreground-heading">Free</h2>
@@ -82,46 +82,7 @@ export default async function PricingPage() {
             </div>
           </div>
 
-          {/* Basic */}
-          <div className="rounded-xl border border-border bg-card p-6 md:p-8 flex flex-col min-h-[220px]">
-            <h2 className="text-xl font-semibold text-foreground-heading">Basic</h2>
-            <p className="mt-2 text-2xl font-bold text-foreground">
-              €29.99 <span className="text-sm font-normal text-muted-foreground">/ month</span>
-            </p>
-            <p className="mt-3 text-sm text-secondary">
-              Founding access for recruiters running a focused desk. Track funded accounts and act before outreach gets crowded.
-            </p>
-            <div className="mt-auto pt-6">
-              {user ? (
-                currentPlan === "basic" ? (
-                  <button
-                    type="button"
-                    className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground opacity-50"
-                    disabled
-                  >
-                    Current plan
-                  </button>
-                ) : (
-                  <form action="/api/stripe/checkout" method="POST" className="w-full">
-                    <input type="hidden" name="plan" value="basic" />
-                    <button
-                      type="submit"
-                      className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
-                    >
-                      {currentPlan === "pro" ? "Switch to Basic" : "Choose Basic"}
-                    </button>
-                  </form>
-                )
-              ) : (
-                <Link href="/signup">
-                  <span className="inline-flex h-10 w-full items-center justify-center rounded-md border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted">
-                    Sign up to choose Basic
-                  </span>
-                </Link>
-              )}
-            </div>
-          </div>
-          {/* Pro */}
+          {/* Founder Pro */}
           <div
             className="relative rounded-xl border-2 border-signal-green/70 bg-card p-6 md:p-8 flex flex-col min-h-[220px]"
             style={{
@@ -131,7 +92,7 @@ export default async function PricingPage() {
             <span className="absolute right-4 top-4 inline-flex w-fit px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-signal-green/25 text-signal-green border border-signal-green/50">
               Recommended
             </span>
-            <h2 className="text-xl font-semibold text-foreground-heading">Founding Pro</h2>
+            <h2 className="text-xl font-semibold text-foreground-heading">Founder Pro</h2>
             <p className="mt-2 text-2xl font-bold text-signal-green">
               €29.99 <span className="text-sm font-normal text-muted-foreground">/ month</span>
             </p>
@@ -145,15 +106,15 @@ export default async function PricingPage() {
                   <button
                     type="submit"
                     className="inline-flex h-10 w-full items-center justify-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90 disabled:pointer-events-none disabled:opacity-50"
-                    disabled={currentPlan === "pro"}
+                    disabled={currentPlan === "pro" || currentPlan === "basic"}
                   >
-                    {currentPlan === "pro" ? "Current plan" : "Upgrade to Pro"}
+                    {currentPlan === "pro" || currentPlan === "basic" ? "Current plan" : "Upgrade to Founder Pro"}
                   </button>
                 </form>
               ) : (
                 <Link href="/signup">
                   <span className="inline-flex h-10 w-full items-center justify-center rounded-md bg-foreground px-4 py-2 text-sm font-medium text-background hover:opacity-90">
-                    Sign up to get Pro
+                    Sign up to get Founder Pro
                   </span>
                 </Link>
               )}
@@ -170,11 +131,8 @@ export default async function PricingPage() {
                 <th className="px-5 py-4 font-semibold text-foreground-heading w-[110px] text-center">
                   Free
                 </th>
-                <th className="px-5 py-4 font-semibold text-foreground-heading w-[110px] text-center">
-                  Basic
-                </th>
                 <th className="px-5 py-4 font-semibold text-signal-green w-[110px] text-center">
-                  Pro
+                  Founder Pro
                 </th>
               </tr>
             </thead>
@@ -183,7 +141,6 @@ export default async function PricingPage() {
                 <tr key={row.feature} className="border-b border-border last:border-b-0 hover:bg-card/60 transition-colors">
                   <td className="px-5 py-4 text-foreground">{row.feature}</td>
                   <td className="px-5 py-4 text-center text-secondary">{row.free}</td>
-                  <td className="px-5 py-4 text-center text-secondary">{row.basic}</td>
                   <td className="px-5 py-4 text-center text-foreground font-medium">{row.pro}</td>
                 </tr>
               ))}
