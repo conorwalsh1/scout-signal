@@ -26,6 +26,7 @@ import { CompanyBadge } from "@/components/company-badge";
 import { formatDaysAgo, getProvenanceInfo, rankProvenanceSourceTypes } from "@/lib/provenance";
 import type { Plan, ScoreComponents } from "@/types/database";
 import { createClient } from "@/lib/supabase/server";
+import { ProPreviewBlock } from "@/components/pro-preview";
 import { getCompanyRelationshipContacts } from "./relationship-actions";
 import { RelationshipAssist } from "./relationship-assist";
 
@@ -317,26 +318,48 @@ export default async function CompanyDetailPage({
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
         <div className="md:col-span-8">
           <DashboardCard title="Funding implications">
-            <div className="rounded-md border border-border/70 bg-background/30 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">What happened?</p>
-              <p className="mt-1 text-sm text-foreground">
-                {fundingRoundType
-                  ? `${formatFundingRoundType(fundingRoundType) ?? fundingRoundType}${fundingAmount ? ` · ${(fundingCurrency ?? "").trim()} ${fundingAmount}` : ""}${fundingAnnouncedDate ? ` · announced ${fundingAnnouncedDate}` : ""}`
-                  : "Fresh activity detected across monitored sources."}
-              </p>
-              {fundingInvestors.length > 0 && (
-                <p className="mt-1 text-xs text-secondary">
-                  Investors: <span className="text-foreground">{fundingInvestors.slice(0, 4).join(", ")}</span>
+            {plan === "pro" ? (
+              <>
+                <div className="rounded-md border border-border/70 bg-background/30 p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">What happened?</p>
+                  <p className="mt-1 text-sm text-foreground">
+                    {fundingRoundType
+                      ? `${formatFundingRoundType(fundingRoundType) ?? fundingRoundType}${fundingAmount ? ` · ${(fundingCurrency ?? "").trim()} ${fundingAmount}` : ""}${fundingAnnouncedDate ? ` · announced ${fundingAnnouncedDate}` : ""}`
+                      : "Fresh activity detected across monitored sources."}
+                  </p>
+                  {fundingInvestors.length > 0 && (
+                    <p className="mt-1 text-xs text-secondary">
+                      Investors: <span className="text-foreground">{fundingInvestors.slice(0, 4).join(", ")}</span>
+                    </p>
+                  )}
+                </div>
+                <p className="text-sm font-medium text-foreground">
+                  {whyThisMatters}
                 </p>
-              )}
-            </div>
-            <p className="text-sm font-medium text-foreground">
-              {whyThisMatters}
-            </p>
-            <div className="mt-2 rounded-md border border-border/70 bg-background/30 p-3">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">What should you do?</p>
-              <p className="mt-1 text-sm text-foreground">{outreachAngle}</p>
-            </div>
+                <div className="mt-2 rounded-md border border-border/70 bg-background/30 p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">What should you do?</p>
+                  <p className="mt-1 text-sm text-foreground">{outreachAngle}</p>
+                </div>
+              </>
+            ) : (
+              <ProPreviewBlock>
+                <div className="rounded-md border border-border/70 bg-background/30 p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">What happened?</p>
+                  <p className="mt-1 text-sm text-foreground">
+                    {fundingRoundType
+                      ? `${formatFundingRoundType(fundingRoundType) ?? fundingRoundType}${fundingAmount ? ` · ${(fundingCurrency ?? "").trim()} ${fundingAmount}` : ""}${fundingAnnouncedDate ? ` · announced ${fundingAnnouncedDate}` : ""}`
+                      : "Fresh activity detected across monitored sources."}
+                  </p>
+                </div>
+                <p className="text-sm font-medium text-foreground">
+                  {whyThisMatters}
+                </p>
+                <div className="mt-2 rounded-md border border-border/70 bg-background/30 p-3">
+                  <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">What should you do?</p>
+                  <p className="mt-1 text-sm text-foreground">{outreachAngle}</p>
+                </div>
+              </ProPreviewBlock>
+            )}
             {companyBadgeIds.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {companyBadgeIds.slice(0, 4).map((bid) => (
@@ -424,24 +447,48 @@ export default async function CompanyDetailPage({
               {fundingRoundType && (
                 <div>
                   <dt className="text-secondary">Funding</dt>
-                  <dd className="text-foreground font-medium">
-                    {formatFundingRoundType(fundingRoundType) ?? fundingRoundType}
-                    {fundingAmount ? ` · ${fundingCurrency ?? ""} ${fundingAmount}`.trim() : ""}
-                  </dd>
-                  {fundingAnnouncedDate && (
-                    <dd className="mt-1 text-xs text-secondary">Announced {fundingAnnouncedDate}</dd>
-                  )}
-                  {fundingInvestors.length > 0 && (
-                    <dd className="mt-1 text-xs text-secondary">Investors: {fundingInvestors.slice(0, 4).join(", ")}</dd>
+                  {plan === "pro" ? (
+                    <>
+                      <dd className="text-foreground font-medium">
+                        {formatFundingRoundType(fundingRoundType) ?? fundingRoundType}
+                        {fundingAmount ? ` · ${fundingCurrency ?? ""} ${fundingAmount}`.trim() : ""}
+                      </dd>
+                      {fundingAnnouncedDate && (
+                        <dd className="mt-1 text-xs text-secondary">Announced {fundingAnnouncedDate}</dd>
+                      )}
+                      {fundingInvestors.length > 0 && (
+                        <dd className="mt-1 text-xs text-secondary">Investors: {fundingInvestors.slice(0, 4).join(", ")}</dd>
+                      )}
+                    </>
+                  ) : (
+                    <dd className="text-foreground font-medium">
+                      {formatFundingRoundType(fundingRoundType) ?? fundingRoundType}
+                      <span className="ml-2 inline-flex items-center gap-1 rounded border border-signal-green/30 bg-signal-green/10 px-1.5 py-0.5 text-[10px] font-semibold text-signal-green">
+                        Pro
+                      </span>
+                    </dd>
                   )}
                 </div>
               )}
               <div>
                 <dt className="text-secondary">Suggested outreach timing</dt>
-                <dd className="text-foreground font-medium">{outreachTiming.window}</dd>
-                <dd className="mt-1 text-xs text-secondary">
-                  Based on {outreachTiming.basedOn.toLowerCase()}: {outreachTiming.rationale}
-                </dd>
+                {plan === "pro" ? (
+                  <>
+                    <dd className="text-foreground font-medium">{outreachTiming.window}</dd>
+                    <dd className="mt-1 text-xs text-secondary">
+                      Based on {outreachTiming.basedOn.toLowerCase()}: {outreachTiming.rationale}
+                    </dd>
+                  </>
+                ) : (
+                  <dd className="mt-1">
+                    <ProPreviewBlock>
+                      <span className="text-foreground font-medium">{outreachTiming.window}</span>
+                      <span className="mt-1 block text-xs text-secondary">
+                        Based on {outreachTiming.basedOn.toLowerCase()}: {outreachTiming.rationale}
+                      </span>
+                    </ProPreviewBlock>
+                  </dd>
+                )}
               </div>
               {monitoredSourceTypes.length > 0 && (
                 <div>

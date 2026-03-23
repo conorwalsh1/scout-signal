@@ -9,6 +9,7 @@ import { getCompanySiteUrl } from "@/lib/company-web";
 import { getProvenanceInfo, rankProvenanceSourceTypes } from "@/lib/provenance";
 import { CompanyBadge } from "@/components/company-badge";
 import { CompanyLogo } from "@/components/company-logo";
+import { ProPreviewInline } from "@/components/pro-preview";
 import type { Plan, ScoreComponents } from "@/types/database";
 
 function IconBookmark({ className, filled }: { className?: string; filled?: boolean }) {
@@ -298,12 +299,22 @@ export function CompanyCard({
         {fundingSnapshot ? (
           <>
             <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-signal-green">Funding signal</p>
-            <p className="mt-0.5 line-clamp-1 text-sm text-foreground">{fundingSnapshot}</p>
+            <p className="mt-0.5 line-clamp-1 text-sm text-foreground">
+              {plan === "pro" ? fundingSnapshot : <ProPreviewInline text={fundingSnapshot} maxChars={30} />}
+            </p>
           </>
         ) : null}
         <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
-        <p className="mt-0.5 line-clamp-1 text-sm text-foreground">{summary}</p>
-        <p className="mt-1 line-clamp-1 text-xs text-secondary">{outreachAngle}</p>
+        <p className="mt-0.5 line-clamp-1 text-sm text-foreground">
+          {plan === "pro" ? summary : <ProPreviewInline text={summary} maxChars={40} />}
+        </p>
+        {plan === "pro" ? (
+          <p className="mt-1 line-clamp-1 text-xs text-secondary">{outreachAngle}</p>
+        ) : (
+          <p className="mt-1 line-clamp-1 text-xs text-secondary">
+            <ProPreviewInline text={outreachAngle} maxChars={35} />
+          </p>
+        )}
         <p className="mt-1 text-xs text-secondary">{metadataParts.join(" · ")}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <ScoreBadge score={score} showMeter={false} />
@@ -415,12 +426,22 @@ export function CompanyCard({
           {fundingSnapshot ? (
             <>
               <p className="text-[11px] font-semibold uppercase tracking-wide text-signal-green">Funding signal</p>
-              <p className="text-sm font-medium text-foreground line-clamp-1">{fundingSnapshot}</p>
+              <p className="text-sm font-medium text-foreground line-clamp-1">
+                {plan === "pro" ? fundingSnapshot : <ProPreviewInline text={fundingSnapshot} maxChars={35} />}
+              </p>
             </>
           ) : null}
           <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
-          <p className="text-sm font-medium text-foreground line-clamp-1">{summary}</p>
-          <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
+          <p className="text-sm font-medium text-foreground line-clamp-1">
+            {plan === "pro" ? summary : <ProPreviewInline text={summary} maxChars={45} />}
+          </p>
+          {plan === "pro" ? (
+            <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
+          ) : (
+            <p className="text-xs text-secondary line-clamp-1">
+              <ProPreviewInline text={outreachAngle} maxChars={40} />
+            </p>
+          )}
           <p className="text-xs text-secondary">
             {metadataParts.join(" · ")}
           </p>
@@ -465,8 +486,16 @@ export function CompanyCard({
       {/* Mobile: why this matters + summary below */}
       <div className="mt-3 flex flex-col gap-1 sm:hidden">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
-        <p className="text-sm text-foreground line-clamp-1">{summary}</p>
-        <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
+        <p className="text-sm text-foreground line-clamp-1">
+          {plan === "pro" ? summary : <ProPreviewInline text={summary} maxChars={40} />}
+        </p>
+        {plan === "pro" ? (
+          <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
+        ) : (
+          <p className="text-xs text-secondary line-clamp-1">
+            <ProPreviewInline text={outreachAngle} maxChars={35} />
+          </p>
+        )}
         <p className="text-xs text-secondary">{metadataParts.join(" · ")}</p>
         <div className="mt-1 flex flex-wrap items-center gap-1">
           {badgeIds.map((bid) => (

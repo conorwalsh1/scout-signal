@@ -3,6 +3,7 @@ import type { LandingCompanyPreview } from "@/lib/landing-data";
 import { CompanyBadge } from "@/components/company-badge";
 import { getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
 import { CompanyLogo } from "@/components/company-logo";
+import { ProPreviewInline } from "@/components/pro-preview";
 import type { Plan } from "@/types/database";
 
 export function LandingCompanyCard({ company, plan = "free" }: { company: LandingCompanyPreview; plan?: Plan }) {
@@ -30,7 +31,7 @@ export function LandingCompanyCard({ company, plan = "free" }: { company: Landin
             {company.latest_signal_label} detected
           </p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {company.insight_line}
+            {plan === "pro" ? company.insight_line : <ProPreviewInline text={company.insight_line ?? "Signal intelligence available"} maxChars={35} />}
           </p>
           {badgeIds.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
