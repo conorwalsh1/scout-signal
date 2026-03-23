@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { ScoreBadge } from "./score-badge";
 import { Button } from "./ui/button";
-import { buildScoreExplanation, getWhyThisMatters } from "@/lib/signal-engine/explanations";
+import { buildScoreExplanation, formatFundingRoundType, getSuggestedOutreachAngle, getWhyThisMatters } from "@/lib/signal-engine/explanations";
 import { getCompanyBadgesForPlan, pickDisplayBadges } from "@/lib/badges";
 import { getCompanySiteUrl } from "@/lib/company-web";
 import { getProvenanceInfo, rankProvenanceSourceTypes } from "@/lib/provenance";
@@ -108,6 +108,21 @@ function getSignalSummary(score_components_json: ScoreComponents): string {
   return getWhyThisMatters(score_components_json);
 }
 
+function getFundingSnapshot(scoreComponents: ScoreComponents): string | null {
+  if (!scoreComponents.funding_event) return null;
+  const round = typeof scoreComponents.funding_round_type === "string"
+    ? formatFundingRoundType(scoreComponents.funding_round_type) ?? scoreComponents.funding_round_type
+    : "Funding";
+  const amount = typeof scoreComponents.funding_amount === "string" ? scoreComponents.funding_amount : null;
+  const currency = typeof scoreComponents.funding_currency === "string" ? scoreComponents.funding_currency : null;
+  const investors = Array.isArray(scoreComponents.funding_investors)
+    ? scoreComponents.funding_investors.filter((value): value is string => typeof value === "string")
+    : [];
+  const amountLabel = amount ? `${currency ?? ""} ${amount}`.trim() : null;
+  const investorLabel = investors.length > 0 ? ` · ${investors.slice(0, 2).join(", ")}` : "";
+  return `${round}${amountLabel ? ` · ${amountLabel}` : ""}${investorLabel}`;
+}
+
 function getRankDisplayStyle(rankPosition: number | null, totalRankedCount: number | null) {
   if (!rankPosition || !totalRankedCount || totalRankedCount <= 1) {
     return {
@@ -182,6 +197,8 @@ export function CompanyCard({
       ? `${recent7d} roles in last 7d${previous7d > 0 ? ` vs ${previous7d} prior` : ""}`
       : null;
   const summary = getSignalSummary(score_components_json);
+  const fundingSnapshot = getFundingSnapshot(score_components_json);
+  const outreachAngle = getSuggestedOutreachAngle(score_components_json);
   const metadataParts = [
     ...evidenceParts,
     trendLine,
@@ -285,8 +302,15 @@ export function CompanyCard({
             </Button>
           </div>
         </div>
+        {fundingSnapshot ? (
+          <>
+            <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-signal-green">Funding signal</p>
+            <p className="mt-0.5 line-clamp-1 text-sm text-foreground">{fundingSnapshot}</p>
+          </>
+        ) : null}
         <p className="mt-2 text-[10px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
         <p className="mt-0.5 line-clamp-1 text-sm text-foreground">{summary}</p>
+        <p className="mt-1 line-clamp-1 text-xs text-secondary">{outreachAngle}</p>
         <p className="mt-1 text-xs text-secondary">{metadataParts.join(" · ")}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <ScoreBadge score={score} showMeter={false} />
@@ -351,8 +375,15 @@ export function CompanyCard({
 
         {/* Middle: why this matters + insight (scan-first) */}
         <div className="hidden min-w-0 flex-[1.2] flex-col gap-1 sm:flex">
+          {fundingSnapshot ? (
+            <>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-signal-green">Funding signal</p>
+              <p className="text-sm font-medium text-foreground line-clamp-1">{fundingSnapshot}</p>
+            </>
+          ) : null}
           <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
           <p className="text-sm font-medium text-foreground line-clamp-1">{summary}</p>
+          <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
           <p className="text-xs text-secondary">
             {metadataParts.join(" · ")}
           </p>
@@ -416,6 +447,7 @@ export function CompanyCard({
       <div className="mt-3 flex flex-col gap-1 sm:hidden">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">Why this matters</p>
         <p className="text-sm text-foreground line-clamp-1">{summary}</p>
+        <p className="text-xs text-secondary line-clamp-1">{outreachAngle}</p>
         <p className="text-xs text-secondary">{metadataParts.join(" · ")}</p>
         <div className="mt-1 flex flex-wrap items-center gap-1">
           {badgeIds.map((bid) => (

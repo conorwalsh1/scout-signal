@@ -15,12 +15,15 @@ export type OutreachTiming = {
 /** Short label for "Latest Signal" column (e.g. "Hiring surge", "Funding", "Job posts"). */
 export function getLatestSignalLabel(scoreComponents: ScoreComponents): string {
   const c = scoreComponents;
+  if (c.funding_event) {
+    const round = typeof c.funding_round_type === "string" ? formatFundingRoundType(c.funding_round_type) : null;
+    return round ?? "Funding";
+  }
   if (c.leadership_hiring) return "Leadership hiring";
   if (c.ai_hiring) return "AI hiring";
   if (c.new_department_hiring) return "New team buildout";
   if (c.engineering_hiring) return "Engineering hiring";
   if (c.hiring_spike) return "Hiring surge";
-  if (c.funding_event) return "Funding";
   const jobs = c.job_posts ?? 0;
   if (jobs > 0) return jobs === 1 ? "1 job post" : `${jobs} job posts`;
   if (c.ft1000_listed) return "FT1000";
@@ -53,6 +56,11 @@ export function getWhyThisMatters(scoreComponents: ScoreComponents): string {
   if (hasLeadership && leadershipJobs > 0) {
     return `${leadershipJobs} leadership role${leadershipJobs !== 1 ? "s" : ""} opened recently — team buildout may follow.`;
   }
+  if (hasFunding) {
+    return fundingRound
+      ? `${formatFundingRoundType(fundingRound) ?? fundingRound} funding is fresh — recruiters who engage early usually get the best access before demand crowds in.`
+      : "Fresh funding is a strong early indicator that hiring demand and vendor spend may follow.";
+  }
   if (hasAi && aiJobs > 0) {
     return `${aiJobs} AI-focused role${aiJobs !== 1 ? "s" : ""} detected recently — capability buildout is underway.`;
   }
@@ -77,15 +85,38 @@ export function getWhyThisMatters(scoreComponents: ScoreComponents): string {
   if (jobs > 0) {
     return `${jobs} new role${jobs !== 1 ? "s" : ""} posted recently.`;
   }
-  if (hasFunding) {
-    return fundingRound
-      ? `${formatFundingRoundType(fundingRound) ?? fundingRound} funding detected — hiring capacity may expand soon.`
-      : "Funding event detected — company is well-capitalized.";
-  }
   if (hasFt1000) {
     return "Listed in FT1000 fast growth ranking.";
   }
   return "No recent signals — check back for updates.";
+}
+
+/** Practical first outreach angle based on strongest current signal. */
+export function getSuggestedOutreachAngle(scoreComponents: ScoreComponents): string {
+  const fundingRound = typeof scoreComponents.funding_round_type === "string" ? scoreComponents.funding_round_type : null;
+  const investors = Array.isArray(scoreComponents.funding_investors)
+    ? scoreComponents.funding_investors.filter((v): v is string => typeof v === "string")
+    : [];
+  const hasFunding = !!scoreComponents.funding_event;
+  const hasLeadership = !!scoreComponents.leadership_hiring || (scoreComponents.leadership_job_posts ?? 0) > 0;
+  const hasAi = !!scoreComponents.ai_hiring || (scoreComponents.ai_job_posts ?? 0) > 0;
+  const hasSpike = !!scoreComponents.hiring_spike || ((scoreComponents.recent_job_posts_7d ?? 0) > 0);
+
+  if (hasFunding) {
+    const round = fundingRound ? (formatFundingRoundType(fundingRound) ?? fundingRound) : "new funding";
+    const investorLine = investors.length > 0 ? ` after backing from ${investors.slice(0, 2).join(" and ")}` : "";
+    return `Reach out on ${round}${investorLine}; position support for the first hiring wave while plans are still forming.`;
+  }
+  if (hasLeadership) {
+    return "Open with leadership change context and ask which teams are likely to scale next quarter.";
+  }
+  if (hasAi) {
+    return "Lead with AI buildout pressure points and offer support on specialist roles that are hard to fill quickly.";
+  }
+  if (hasSpike) {
+    return "Use recent hiring acceleration as the hook and ask where shortlist gaps are emerging first.";
+  }
+  return "Use a light discovery opener focused on growth priorities and resourcing plans over the next quarter.";
 }
 
 /** Per-signal insight lines (readable intelligence, not raw tags). */

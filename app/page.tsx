@@ -71,21 +71,21 @@ export default async function HomePage() {
             <FlowStep
               step={1}
               title="Track"
-              body="Keep tabs on multiple accounts without overload. One place for the signals you’d otherwise miss."
+              body="Track fresh Series A-C rounds across target accounts so you spot capital deployment early."
               icon={<IconRadar className="h-5 w-5 text-signal-green" />}
             />
             <FlowConnector variant="first" />
             <FlowStep
               step={2}
               title="Prioritise"
-              body="See what’s worth acting on. Rank changes and hiring momentum so you focus on the right opportunities."
+              body="Prioritise funded companies by timing, round type, and supporting evidence so outreach is focused."
               icon={<IconBolt className="h-5 w-5 text-signal-green" />}
             />
             <FlowConnector variant="second" />
             <FlowStep
               step={3}
               title="Act"
-              body="Know what changed, when it changed, and where it came from — then reach out at the right time."
+              body="Get recruiter-ready context on what changed, why it matters, and what to say next."
               icon={<IconArrowOut className="h-5 w-5 text-signal-green" />}
             />
           </div>
@@ -96,7 +96,7 @@ export default async function HomePage() {
 
       <section className="border-t border-border/50 bg-card/30 px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl font-bold text-foreground-heading">What changed today</h2>
+          <h2 className="text-2xl font-bold text-foreground-heading">Fresh funding signals</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {latestCompanies.length > 0 ? (
               latestCompanies.map((company) => (

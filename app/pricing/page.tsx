@@ -3,19 +3,19 @@ import { createClient } from "@/lib/supabase/server";
 
 // Aligned with actual app behavior. See docs/PRICING_TABLE_AUDIT.md.
 const FEATURES = [
-  { feature: "Signal feed (daily coverage)", free: "Live sample feed", basic: "Up to 100 companies", pro: "Up to 500 companies" },
-  { feature: "Company intelligence pages", free: "Yes", basic: "Yes", pro: "Yes" },
-  { feature: "Prioritisation (signal scoring)", free: "Read-only preview", basic: "Yes", pro: "Yes" },
-  { feature: "Signals + provenance (what/when/where)", free: "Preview only", basic: "Yes", pro: "Yes" },
+  { feature: "Funding feed (Series A-C focus)", free: "Live sample feed", basic: "Up to 100 companies", pro: "Up to 500 companies" },
+  { feature: "Funding context (round/amount/investors)", free: "Preview only", basic: "Yes", pro: "Yes" },
+  { feature: "Recruiter-ready interpretation", free: "Preview only", basic: "Yes", pro: "Yes" },
+  { feature: "Outreach timing guidance", free: "Preview only", basic: "Yes", pro: "Yes" },
   { feature: "Saved / tracked companies", free: "10", basic: "25", pro: "1,000" },
-  { feature: "Exec signal + Hypergrowth badges", free: "No", basic: "No", pro: "Yes" },
-  { feature: "Search and ranking tools", free: "Yes", basic: "Yes", pro: "Yes" },
-  { feature: "Signal history timeline", free: "Yes", basic: "Yes", pro: "Yes" },
-  { feature: "Signal badges", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Executive + expansion signals", free: "No", basic: "Yes", pro: "Yes" },
+  { feature: "Funding-first ranking tools", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Signal timeline + provenance", free: "Yes", basic: "Yes", pro: "Yes" },
+  { feature: "Daily intelligence feed", free: "Yes", basic: "Yes", pro: "Yes" },
   { feature: "Alerts", free: "In-app setup", basic: "In-app setup", pro: "In-app setup (email delivery coming)" },
   { feature: "Advanced signal filters", free: "Yes", basic: "Yes", pro: "Yes" },
   { feature: "Data export", free: "No", basic: "No", pro: "Coming soon" },
-  { feature: "Hiring trend analytics", free: "No", basic: "—", pro: "Coming soon" },
+  { feature: "Capital-to-hiring trend analytics", free: "No", basic: "—", pro: "Coming soon" },
   { feature: "Signal score breakdown", free: "Yes", basic: "Yes", pro: "Yes" },
 ] as const;
 
@@ -32,7 +32,7 @@ export default async function PricingPage() {
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-foreground-heading mb-2">Pricing</h1>
         <p className="text-secondary mb-10">
-          Start free, then upgrade when you need more coverage and Pro-only signals.
+          Founding access pricing while we onboard early recruiter teams and refine the funding-intelligence workflow.
         </p>
         <div className="mb-8 rounded-xl border border-border bg-card/60 px-4 py-3 text-sm text-secondary">
           {user ? (
@@ -55,7 +55,7 @@ export default async function PricingPage() {
               €0 <span className="text-sm font-normal text-muted-foreground">/ month</span>
             </p>
             <p className="mt-3 text-sm text-secondary">
-              Get the feel of the signal feed and how we summarise what changed. Great for a quick evaluation.
+              Get a feel for the funding intelligence feed and how Signal Scout turns events into recruiter-ready insight.
             </p>
             <div className="mt-auto pt-6">
               {user ? (
@@ -86,10 +86,10 @@ export default async function PricingPage() {
           <div className="rounded-xl border border-border bg-card p-6 md:p-8 flex flex-col min-h-[220px]">
             <h2 className="text-xl font-semibold text-foreground-heading">Basic</h2>
             <p className="mt-2 text-2xl font-bold text-foreground">
-              €39.99 <span className="text-sm font-normal text-muted-foreground">/ month</span>
+              €29.99 <span className="text-sm font-normal text-muted-foreground">/ month</span>
             </p>
             <p className="mt-3 text-sm text-secondary">
-              For recruiters running a smaller desk. Enough coverage to stay on top of your core accounts.
+              Founding access for recruiters running a focused desk. Track funded accounts and act before outreach gets crowded.
             </p>
             <div className="mt-auto pt-6">
               {user ? (
@@ -131,12 +131,12 @@ export default async function PricingPage() {
             <span className="absolute right-4 top-4 inline-flex w-fit px-2.5 py-1 rounded-md text-[10px] font-semibold uppercase tracking-wider bg-signal-green/25 text-signal-green border border-signal-green/50">
               Recommended
             </span>
-            <h2 className="text-xl font-semibold text-foreground-heading">Pro</h2>
+            <h2 className="text-xl font-semibold text-foreground-heading">Founding Pro</h2>
             <p className="mt-2 text-2xl font-bold text-signal-green">
-              €99.99 <span className="text-sm font-normal text-muted-foreground">/ month</span>
+              €29.99 <span className="text-sm font-normal text-muted-foreground">/ month</span>
             </p>
             <p className="mt-3 text-sm text-secondary">
-              For agency desks tracking 30–50+ companies. Includes Pro-only signals like <span className="font-medium text-foreground">Exec signal</span> and <span className="font-medium text-foreground">Hypergrowth</span>.
+              Validation-stage pricing for agency desks tracking 30–50+ companies. Prioritise Series A-C momentum with supporting signals like <span className="font-medium text-foreground">Exec signal</span> and <span className="font-medium text-foreground">Hypergrowth</span>.
             </p>
             <div className="mt-auto pt-6">
               {user ? (

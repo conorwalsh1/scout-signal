@@ -16,6 +16,7 @@ import { HiringActivityChart, type HiringActivityPoint } from "@/components/comp
 import {
   buildScoreExplanation,
   formatFundingRoundType,
+  getSuggestedOutreachAngle,
   getWhyThisMatters,
   getScoreBreakdown,
   getSuggestedOutreachTiming,
@@ -208,6 +209,26 @@ export default async function CompanyDetailPage({
     typeof company.score_components_json?.funding_currency === "string"
       ? company.score_components_json.funding_currency
       : null;
+  const fundingInvestors = Array.isArray(company.score_components_json?.funding_investors)
+    ? company.score_components_json.funding_investors.filter((value): value is string => typeof value === "string")
+    : [];
+  const latestFundingTimestamp = (() => {
+    const signalFundingTimes = signals
+      .filter((s) => s.signal_type === "funding_event")
+      .map((s) => new Date(s.occurred_at).getTime())
+      .filter((value) => Number.isFinite(value));
+    const eventFundingTimes = events
+      .filter((e) => e.event_type === "funding_event_detected" || e.event_type === "funding_event")
+      .map((e) => new Date(e.detected_at).getTime())
+      .filter((value) => Number.isFinite(value));
+    const allTimes = [...signalFundingTimes, ...eventFundingTimes];
+    if (allTimes.length === 0) return null;
+    return Math.max(...allTimes);
+  })();
+  const fundingAnnouncedDate = latestFundingTimestamp
+    ? new Date(latestFundingTimestamp).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })
+    : null;
+  const outreachAngle = getSuggestedOutreachAngle(comp);
   // Hiring velocity sparkline: aggregate job-post events by day (last 30 days).
   const hiringPoints: HiringActivityPoint[] = (() => {
     const counts = new Map<string, number>();
@@ -295,13 +316,27 @@ export default async function CompanyDetailPage({
       {/* Primary row – narrative + facts side-by-side */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
         <div className="md:col-span-8">
-          <DashboardCard title="Why this matters">
+          <DashboardCard title="Funding implications">
+            <div className="rounded-md border border-border/70 bg-background/30 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">What happened?</p>
+              <p className="mt-1 text-sm text-foreground">
+                {fundingRoundType
+                  ? `${formatFundingRoundType(fundingRoundType) ?? fundingRoundType}${fundingAmount ? ` · ${(fundingCurrency ?? "").trim()} ${fundingAmount}` : ""}${fundingAnnouncedDate ? ` · announced ${fundingAnnouncedDate}` : ""}`
+                  : "Fresh activity detected across monitored sources."}
+              </p>
+              {fundingInvestors.length > 0 && (
+                <p className="mt-1 text-xs text-secondary">
+                  Investors: <span className="text-foreground">{fundingInvestors.slice(0, 4).join(", ")}</span>
+                </p>
+              )}
+            </div>
             <p className="text-sm font-medium text-foreground">
               {whyThisMatters}
             </p>
-            <p className="mt-2 text-xs text-secondary">
-              Early hiring moves often precede product launches, market expansion, or new strategic initiatives.
-            </p>
+            <div className="mt-2 rounded-md border border-border/70 bg-background/30 p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-secondary">What should you do?</p>
+              <p className="mt-1 text-sm text-foreground">{outreachAngle}</p>
+            </div>
             {companyBadgeIds.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {companyBadgeIds.slice(0, 4).map((bid) => (
@@ -393,6 +428,12 @@ export default async function CompanyDetailPage({
                     {formatFundingRoundType(fundingRoundType) ?? fundingRoundType}
                     {fundingAmount ? ` · ${fundingCurrency ?? ""} ${fundingAmount}`.trim() : ""}
                   </dd>
+                  {fundingAnnouncedDate && (
+                    <dd className="mt-1 text-xs text-secondary">Announced {fundingAnnouncedDate}</dd>
+                  )}
+                  {fundingInvestors.length > 0 && (
+                    <dd className="mt-1 text-xs text-secondary">Investors: {fundingInvestors.slice(0, 4).join(", ")}</dd>
+                  )}
                 </div>
               )}
               <div>

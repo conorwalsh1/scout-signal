@@ -61,13 +61,13 @@ export function LandingHeroWithRadar({
             </div>
             <div className="min-w-0 flex-1 text-center lg:order-1 lg:text-left">
               <p className="text-sm font-medium uppercase tracking-[0.22em] text-signal-green">
-                You&apos;re not short on data. You&apos;re short on signal.
+                Fresh funding creates recruiting opportunity.
               </p>
               <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground-heading sm:text-5xl lg:text-6xl">
-                Know who to contact this week.
+                Track newly funded companies before hiring demand becomes obvious.
               </h1>
               <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-secondary lg:mx-0">
-                ScoutSignal tracks hiring momentum across your target accounts and ranks who is actually worth your time.
+                Signal Scout tracks Series A-C funding events and translates them into recruiter-ready opportunities so you can act before other agencies pile in.
               </p>
               <p className="mt-4 text-sm text-muted-foreground">
                 Tracking <span className="font-semibold text-signal-green">{displayCount}</span> companies.

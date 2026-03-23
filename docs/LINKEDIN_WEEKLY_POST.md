@@ -1,8 +1,8 @@
-# Friday LinkedIn post — top 25 by signal rank
+# Friday LinkedIn post — top funded opportunities
 
 ## What it is
 
-A weekly post listing the **top 25 companies by global Scout Signal rank** (`company_scores.rank_position`). Same ordering as your in-app “sort by rank” feed.
+A weekly post listing the **top 25 companies by global Signal Scout rank** (`company_scores.rank_position`) with funding-first commentary for recruiters. Same ordering as your in-app “sort by rank” feed.
 
 ## Before you post
 

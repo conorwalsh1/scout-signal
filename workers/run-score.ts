@@ -12,9 +12,43 @@ import {
   getLeadershipRolesFromMetadata,
   getNumericMetadata,
 } from "@/lib/job-intelligence";
+import type { SignalType } from "@/lib/signal-engine/weights";
 import type { ScoreComponents } from "@/types/database";
 
 const WINDOW_DAYS = 30;
+const FUNDING_FIRST_SIGNAL_MULTIPLIERS: Partial<Record<SignalType, number>> = {
+  funding_event: 1.4,
+  leadership_hiring: 0.8,
+  new_department_hiring: 0.7,
+  ai_hiring: 0.55,
+  engineering_hiring: 0.55,
+  hiring_spike: 0.35,
+  job_post: 0.2,
+  remote_hiring: 0.3,
+};
+
+function isFundingFirstModeEnabled(): boolean {
+  const raw = process.env.FUNDING_FIRST_MODE?.trim().toLowerCase();
+  return raw === "1" || raw === "true" || raw === "yes";
+}
+
+function normalizeFundingRound(round: string | null): "series_a" | "series_b" | "series_c_plus" | "other" {
+  if (!round) return "other";
+  const value = round.trim().toLowerCase();
+  if (value.includes("series_a")) return "series_a";
+  if (value.includes("series_b")) return "series_b";
+  if (value.includes("series_c") || value.includes("series_d") || value.includes("series_e") || value.includes("growth")) {
+    return "series_c_plus";
+  }
+  return "other";
+}
+
+function daysSince(iso: string | null, now: Date): number {
+  if (!iso) return Number.POSITIVE_INFINITY;
+  const time = new Date(iso).getTime();
+  if (!Number.isFinite(time)) return Number.POSITIVE_INFINITY;
+  return Math.floor((now.getTime() - time) / (24 * 60 * 60 * 1000));
+}
 
 function getFt1000Baseline(rank: number | null | undefined): number {
   if (!rank || rank < 1) return 0;
@@ -141,6 +175,7 @@ export async function run() {
       funding_currency: string | null;
       funding_investors: string[];
       source_type: string | null;
+      detected_at: string | null;
     }
   >();
 
@@ -248,6 +283,7 @@ export async function run() {
         ? metadata.investors.filter((value): value is string => typeof value === "string")
         : [],
       source_type: typeof event.source_type === "string" ? event.source_type : null,
+      detected_at: typeof event.detected_at === "string" ? event.detected_at : null,
     });
   }
   const companies = await fetchAllRows(async (from, to) => {
@@ -259,6 +295,7 @@ export async function run() {
     return data ?? [];
   });
 
+  const fundingFirstMode = isFundingFirstModeEnabled();
   const scoredCompanies: Array<{
     company_id: string;
     score: number;
@@ -280,13 +317,46 @@ export async function run() {
 
     try {
       const baseScore = companySignals.length > 0
-        ? calculateScore(companySignals, now)
+        ? calculateScore(companySignals, now, fundingFirstMode
+          ? {
+              signalMultipliers: FUNDING_FIRST_SIGNAL_MULTIPLIERS,
+              diversityBonusPerExtraSignal: 2,
+            }
+          : undefined)
         : { score: 0, score_components_json: {} as ScoreComponents };
-      const score = Math.min(100, baseScore.score + ft1000Baseline);
+      const fundingContext = fundingContextByCompany.get(company_id);
       const score_components_json = {
         ...baseScore.score_components_json,
         ...ft1000Components,
       };
+
+      let fundingRoundBoostPoints = 0;
+      let fundingFreshnessBoostPoints = 0;
+      if (fundingFirstMode && fundingContext?.detected_at) {
+        const normalizedRound = normalizeFundingRound(fundingContext.funding_round_type);
+        if (normalizedRound === "series_a") fundingRoundBoostPoints = 10;
+        else if (normalizedRound === "series_b") fundingRoundBoostPoints = 14;
+        else if (normalizedRound === "series_c_plus") fundingRoundBoostPoints = 18;
+        else fundingRoundBoostPoints = 6;
+
+        const fundingAgeDays = daysSince(fundingContext.detected_at, now);
+        if (fundingAgeDays <= 14) fundingFreshnessBoostPoints = 10;
+        else if (fundingAgeDays <= 30) fundingFreshnessBoostPoints = 5;
+        else if (fundingAgeDays <= 45) fundingFreshnessBoostPoints = 2;
+      }
+
+      const score = Math.min(
+        100,
+        baseScore.score + ft1000Baseline + fundingRoundBoostPoints + fundingFreshnessBoostPoints
+      );
+
+      if (fundingRoundBoostPoints > 0 || fundingFreshnessBoostPoints > 0) {
+        score_components_json.funding_points =
+          (score_components_json.funding_points ?? 0) + fundingRoundBoostPoints + fundingFreshnessBoostPoints;
+      }
+      score_components_json.funding_first_mode = fundingFirstMode;
+      score_components_json.funding_round_boost_points = fundingRoundBoostPoints;
+      score_components_json.funding_freshness_boost_points = fundingFreshnessBoostPoints;
       const jobMetrics = jobMetricsByCompany.get(company_id);
       if (jobMetrics) {
         const knownDepartments = historicalDepartmentSets.get(company_id) ?? new Set<string>();
@@ -327,7 +397,6 @@ export async function run() {
             : 0;
         score_components_json.monitored_source_types = Array.from(jobMetrics.source_types).sort();
       }
-      const fundingContext = fundingContextByCompany.get(company_id);
       if (fundingContext) {
         score_components_json.funding_round_type = fundingContext.funding_round_type;
         score_components_json.funding_amount = fundingContext.funding_amount;

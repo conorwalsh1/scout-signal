@@ -44,7 +44,7 @@ export default async function DashboardPage() {
         </p>
       </div>
       <p className="text-secondary">
-        Companies ranked by hiring signal score. Save companies to revisit later.
+        Companies ranked by funding-to-hiring intelligence. Save priority accounts and act while timing is favorable.
       </p>
       {adminUser && (
         <div className="rounded-lg border border-border bg-card/60 px-4 py-3 text-sm">
@@ -66,7 +66,7 @@ export default async function DashboardPage() {
             No hiring signals detected yet
           </p>
           <p className="mt-1 text-sm text-secondary">
-            Run the pipeline to fetch job posts (Greenhouse, career pages) and funding news, then generate signals and scores. From the project root:
+            Run the pipeline to fetch funding events and supporting company signals, then generate scores. From the project root:
           </p>
           <code className="mt-2 block rounded bg-sidebar px-3 py-2 text-xs text-foreground font-mono">
             npm run worker:all

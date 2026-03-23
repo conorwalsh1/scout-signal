@@ -18,10 +18,10 @@ function getLimitArg(): number {
 
 function buildPost(rows: Awaited<ReturnType<typeof getTopRankedForWeeklyPost>>, appUrl: string): string {
   const today = new Date().toISOString().slice(0, 10);
-  const header = `Scout Signal weekly ranking - ${today}`;
+  const header = `Signal Scout weekly funding-to-hiring ranking - ${today}`;
   const intro = [
-    `Here are this week's top ${rows.length} companies by Scout Signal rank.`,
-    "These rankings are based on public hiring and growth signals detected across the market.",
+    `Here are this week's top ${rows.length} recruiter opportunities by Signal Scout rank.`,
+    "Ranking is funding-first: fresh Series A-C events lead, with hiring and expansion activity as supporting confirmation.",
     "",
   ];
 
@@ -31,7 +31,7 @@ function buildPost(rows: Awaited<ReturnType<typeof getTopRankedForWeeklyPost>>, 
 
   const outro = [
     "",
-    `Explore more live signals: ${appUrl}`,
+    `Explore more live funding signals: ${appUrl}`,
     "Signals are derived from public sources and are not financial advice.",
     "#recruitment #businessdevelopment #sales #startups #hiring",
   ];

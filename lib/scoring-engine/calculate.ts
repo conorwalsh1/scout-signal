@@ -9,11 +9,20 @@ export interface SignalRow {
   occurred_at: string;
 }
 
+type ScoreOptions = {
+  signalMultipliers?: Partial<Record<SignalType, number>>;
+  diversityBonusPerExtraSignal?: number;
+};
+
 /**
  * Compute company score from signals with recency decay.
  * Returns score (0–100 capped for display), components for explanation, and per-category points for breakdown.
  */
-export function calculateScore(signals: SignalRow[], now: Date = new Date()): {
+export function calculateScore(
+  signals: SignalRow[],
+  now: Date = new Date(),
+  options?: ScoreOptions
+): {
   score: number;
   score_components_json: ScoreComponents;
 } {
@@ -40,7 +49,9 @@ export function calculateScore(signals: SignalRow[], now: Date = new Date()): {
   for (const s of signals) {
     const factor = decayFactor(s.occurred_at, now);
     if (factor === 0) continue;
-    const contribution = Math.round(s.weight * factor);
+    const multiplier =
+      (options?.signalMultipliers?.[s.signal_type as SignalType] ?? 1);
+    const contribution = Math.round(s.weight * factor * multiplier);
     total += contribution;
 
     if (s.signal_type === "job_post") {
@@ -87,7 +98,8 @@ export function calculateScore(signals: SignalRow[], now: Date = new Date()): {
     components.leadership_hiring,
     components.funding_event,
   ].filter(Boolean).length;
-  const diversityBonus = distinctSignalFlags > 1 ? (distinctSignalFlags - 1) * 3 : 0;
+  const diversityStep = options?.diversityBonusPerExtraSignal ?? 3;
+  const diversityBonus = distinctSignalFlags > 1 ? (distinctSignalFlags - 1) * diversityStep : 0;
 
   // Non‑linear scaling: turn raw points into a 0–100 score with
   // more nuance in the mid‑range and less bunching at 10.0/10.
