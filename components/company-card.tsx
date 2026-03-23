@@ -143,6 +143,12 @@ function getRankDisplayStyle(rankPosition: number | null, totalRankedCount: numb
   };
 }
 
+function getRankPercentileLabel(rankPosition: number | null, totalRankedCount: number | null): string | null {
+  if (!rankPosition || !totalRankedCount || totalRankedCount <= 0) return null;
+  const percentile = Math.max(1, Math.ceil((rankPosition / totalRankedCount) * 100));
+  return `Top ${percentile}%`;
+}
+
 export function CompanyCard({
   id,
   name,
@@ -215,6 +221,19 @@ export function CompanyCard({
       ? null
       : `${Math.abs(rankMovement)} place${Math.abs(rankMovement) === 1 ? "" : "s"}`;
   const rankDisplayStyle = getRankDisplayStyle(rankPosition, totalRankedCount);
+  const rankPercentileLabel = getRankPercentileLabel(rankPosition, totalRankedCount);
+  const rankMovementToneClass =
+    rankMovement == null || rankMovement === 0
+      ? "text-secondary"
+      : rankMovement > 0
+        ? "text-signal-green"
+        : "text-red-400";
+  const rankBorderClass =
+    rankMovement == null || rankMovement === 0
+      ? "border-border"
+      : rankMovement > 0
+        ? "border-signal-green/35"
+        : "border-red-400/30";
   const router = useRouter();
 
   if (compact) {
@@ -277,16 +296,24 @@ export function CompanyCard({
               </span>
             </Button>
             {rankPosition != null ? (
-              <div className="rounded-md border px-2 py-1 text-right text-xs" style={rankDisplayStyle}>
-                <div className="font-mono font-semibold leading-none">
+              <div className={`min-w-[86px] rounded-md border bg-card/40 px-2.5 py-2 text-right ${rankBorderClass}`} style={rankDisplayStyle}>
+                <div className="text-[10px] uppercase tracking-wide text-secondary">Rank</div>
+                <div className="mt-0.5 font-mono text-sm font-semibold leading-none text-foreground">
                   #{rankPosition}{totalRankedCount ? <span className="opacity-70"> / {totalRankedCount}</span> : null}
                 </div>
-                {movementLabel && rankMovement != null ? (
-                  <div className={`mt-1 inline-flex items-center gap-1 text-[10px] font-semibold ${rankMovement > 0 ? "text-signal-green" : "text-red-400"}`}>
-                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-                    {movementLabel}
-                  </div>
-                ) : null}
+                <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovementToneClass}`}>
+                  {movementLabel && rankMovement != null ? (
+                    <>
+                      {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
+                      {movementLabel}
+                    </>
+                  ) : (
+                    "No change"
+                  )}
+                  {rankPercentileLabel ? (
+                    <span className="ml-1 font-medium text-secondary">{rankPercentileLabel}</span>
+                  ) : null}
+                </div>
               </div>
             ) : null}
           </div>
@@ -407,17 +434,24 @@ export function CompanyCard({
               </span>
             </Button>
             {rankPosition != null ? (
-              <div className="rounded-lg border px-3 py-2 text-right text-xs" style={rankDisplayStyle}>
+              <div className={`min-w-[86px] rounded-md border bg-card/40 px-2.5 py-2 text-right text-xs ${rankBorderClass}`} style={rankDisplayStyle}>
                 <div className="text-[10px] font-semibold uppercase tracking-wide opacity-80">Rank</div>
-                <div className="mt-0.5 font-mono text-lg font-bold leading-none">
+                <div className="mt-0.5 font-mono text-sm font-semibold leading-none text-foreground">
                   #{rankPosition}{totalRankedCount ? <span className="text-xs font-medium opacity-70"> / {totalRankedCount}</span> : null}
                 </div>
-                {movementLabel && rankMovement != null ? (
-                  <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovement > 0 ? "text-signal-green" : "text-red-400"}`}>
-                    {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
-                    {movementLabel}
-                  </div>
-                ) : null}
+                <div className={`mt-1 inline-flex items-center justify-end gap-1 text-[10px] font-semibold ${rankMovementToneClass}`}>
+                  {movementLabel && rankMovement != null ? (
+                    <>
+                      {rankMovement > 0 ? <IconArrowUp className="h-3 w-3" /> : <IconArrowDown className="h-3 w-3" />}
+                      {movementLabel}
+                    </>
+                  ) : (
+                    "No change"
+                  )}
+                  {rankPercentileLabel ? (
+                    <span className="ml-1 font-medium text-secondary">{rankPercentileLabel}</span>
+                  ) : null}
+                </div>
               </div>
             ) : null}
           </div>
