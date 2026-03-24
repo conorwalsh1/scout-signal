@@ -5,9 +5,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
 export const metadata: Metadata = {
-  title: "ScoutSignal — Discover companies before they start scaling",
+  title: "Signal Scout — Funding-to-hiring intelligence for recruiters",
   description:
-    "Real-time hiring intelligence that reveals which companies are about to grow. Track high-growth companies across Europe and the US.",
+    "Track newly funded companies before hiring demand becomes obvious. Signal Scout monitors Series A–C funding events and turns them into recruiter-ready opportunities.",
   icons: {
     icon: "/brand-mark.png",
     apple: "/brand-mark.png",
