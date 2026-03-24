@@ -32,9 +32,6 @@ export default async function PricingPage() {
     <main className="min-h-screen p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-foreground-heading mb-2">Pricing</h1>
-        <p className="text-secondary mb-10">
-          Founding access pricing while we onboard early recruiter teams and refine the funding-intelligence workflow.
-        </p>
         <div className="mb-8 rounded-xl border border-border bg-card/60 px-4 py-3 text-sm text-secondary">
           {user ? (
             <span>

@@ -286,7 +286,7 @@ export function CompanyCard({
             </div>
           ) : null}
         </div>
-        <div className="flex items-start gap-3 pr-20">
+        <div className={`flex items-start gap-3 pr-24 ${rankPosition != null ? "min-h-[100px]" : ""}`}>
           <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
             <CompanyLogo name={name} website={website} domain={domain} className="h-full w-full object-contain" />
           </div>
@@ -397,8 +397,8 @@ export function CompanyCard({
         ) : null}
       </div>
 
-      {/* Header: identity row */}
-      <div className="flex items-start gap-3 pr-24">
+      {/* Header: identity row — min-h ensures content clears the rank box */}
+      <div className={`flex items-start gap-3 pr-24 ${rankPosition != null ? "min-h-[100px]" : ""}`}>
         <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-border bg-sidebar">
           <CompanyLogo name={name} website={website} domain={domain} className="h-full w-full object-contain" />
         </div>

@@ -28,6 +28,7 @@ export async function getRecentSignalHeadlines(limit = 5): Promise<RecentHeadlin
   const { data, error } = await supabase
     .from("events")
     .select("id, source_url, detected_at, event_type, company_name_raw, metadata_json")
+    .in("event_type", ["funding_event", "funding_event_detected"])
     .not("source_url", "is", null)
     .like("source_url", "http%")
     .order("detected_at", { ascending: false })
