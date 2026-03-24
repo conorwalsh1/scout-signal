@@ -1,21 +1,14 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
+import Link from "next/link";
 import { CompanyCard } from "@/components/company-card";
 import { EmptyState } from "@/components/empty-state";
 import { FilterBar } from "@/components/filter-bar";
 import { getCompanyBadgesForPlan } from "@/lib/badges";
 import type { ScoreComponents } from "@/types/database";
 import { saveCompany, unsaveCompany } from "./actions";
-
-interface RecentHeadline {
-  id: string;
-  source_url: string;
-  detected_at: string;
-  event_type: string;
-  company_name_raw: string;
-  title: string | null;
-}
+import type { RecentHeadline } from "./data";
 
 interface FeedItem {
   id: string;
@@ -363,19 +356,24 @@ export function DashboardFeed({
                   const date = new Date(h.detected_at);
                   const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
                   const label = h.title || `${h.company_name_raw} — ${eventTypeLabel(h.event_type)}`;
+                  const href = h.company_id ? `/companies/${h.company_id}` : null;
+                  const inner = (
+                    <div className="flex flex-col gap-0.5 rounded-lg border border-border bg-card/50 px-4 py-3 transition-colors hover:border-data-blue hover:bg-card">
+                      <span className="line-clamp-2 text-sm font-medium text-foreground">
+                        {label}
+                      </span>
+                      <span className="text-xs text-muted-foreground">{dateStr}</span>
+                    </div>
+                  );
                   return (
                     <li key={h.id}>
-                      <a
-                        href={h.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex flex-col gap-0.5 rounded-lg border border-border bg-card/50 px-4 py-3 transition-colors hover:border-data-blue hover:bg-card"
-                      >
-                        <span className="line-clamp-2 text-sm font-medium text-foreground hover:text-data-blue">
-                          {label}
-                        </span>
-                        <span className="text-xs text-muted-foreground">{dateStr}</span>
-                      </a>
+                      {href ? (
+                        <Link href={href} className="block">
+                          {inner}
+                        </Link>
+                      ) : (
+                        inner
+                      )}
                     </li>
                   );
                 })}

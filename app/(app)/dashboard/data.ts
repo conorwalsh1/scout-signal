@@ -15,6 +15,7 @@ import type { ScoreComponents } from "@/types/database";
 
 export type RecentHeadline = {
   id: string;
+  company_id: string | null;
   source_url: string;
   detected_at: string;
   event_type: string;
@@ -22,22 +23,21 @@ export type RecentHeadline = {
   title: string | null;
 };
 
-/** Five most recent events with source URLs (for dashboard news feed). */
+/** Five most recent funding events (for dashboard news feed). */
 export async function getRecentSignalHeadlines(limit = 5): Promise<RecentHeadline[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("events")
-    .select("id, source_url, detected_at, event_type, company_name_raw, metadata_json")
+    .select("id, company_id, source_url, detected_at, event_type, company_name_raw, metadata_json")
     .in("event_type", ["funding_event", "funding_event_detected"])
-    .not("source_url", "is", null)
-    .like("source_url", "http%")
     .order("detected_at", { ascending: false })
     .limit(limit);
 
   if (error) return [];
   const rows = (data ?? []) as Array<{
     id: string;
-    source_url: string;
+    company_id: string | null;
+    source_url: string | null;
     detected_at: string;
     event_type: string;
     company_name_raw: string;
@@ -49,13 +49,10 @@ export async function getRecentSignalHeadlines(limit = 5): Promise<RecentHeadlin
     if (!title && typeof meta.funding_round_type === "string") {
       title = `${r.company_name_raw} — ${meta.funding_round_type.replace(/_/g, " ")} funding`;
     }
-    if (!title && typeof meta.job_count === "number") {
-      const n = meta.job_count;
-      title = `${r.company_name_raw} — ${n} open role${n !== 1 ? "s" : ""}`;
-    }
     return {
       id: r.id,
-      source_url: r.source_url,
+      company_id: r.company_id ?? null,
+      source_url: r.source_url ?? "",
       detected_at: r.detected_at,
       event_type: r.event_type,
       company_name_raw: r.company_name_raw,
