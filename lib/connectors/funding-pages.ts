@@ -8,6 +8,7 @@ import {
   extractFundingAmount,
   extractLeadInvestors,
 } from "./funding-utils";
+import { isParkedRedirect, isParkedContent, isKnownParkingUrl } from "./parked-domain-filter";
 
 const FUNDING_PATHS = ["/press", "/news", "/newsroom", "/blog", "/press-releases"];
 const FUNDING_HINT_RE = /\b(raises?|raised|secures?|secured|announces? funding|series\s+[a-f]|pre-seed|seed round|growth round|strategic investment)\b/i;
@@ -63,6 +64,11 @@ export const fundingPagesConnector: SourceConnector = {
         continue;
       }
 
+      if (isKnownParkingUrl(baseUrl)) {
+        await updateSourceRegistryStatus("funding_page", row.source_key, "error", 0);
+        continue;
+      }
+
       let rowResultCount = 0;
 
       for (const url of buildCandidateUrls(baseUrl)) {
@@ -74,8 +80,13 @@ export const fundingPagesConnector: SourceConnector = {
           });
           if (!res.ok) continue;
 
+          const finalUrl = res.url || url;
+          if (isParkedRedirect(finalUrl, url)) continue;
+
           const html = await res.text();
           const $ = cheerio.load(html);
+          const bodyText = $("body").text().replace(/\s+/g, " ").trim();
+          if (isParkedContent(bodyText)) continue;
           const candidates = new Map<string, string>();
 
           $("a, h1, h2, h3, article, li").each((_, node) => {

@@ -15,6 +15,7 @@ import { fundingNewsConnector } from "@/lib/connectors/funding-news";
 import { fundingPagesConnector } from "@/lib/connectors/funding-pages";
 import { matchCompany } from "@/lib/ingestion/company-match";
 import { withRetry } from "@/lib/retry";
+import { isKnownParkingUrl } from "@/lib/connectors/parked-domain-filter";
 import type { RawIngestionEvent } from "@/types/ingestion";
 import type { Company } from "@/types/database";
 
@@ -194,6 +195,11 @@ export async function run(options?: { includeStaticConnectors?: boolean }) {
     for (const raw of rawEvents) {
       if (!isValidRawEvent(raw)) {
         log.log("Skipping invalid raw event", { sourceType: connector.sourceType });
+        continue;
+      }
+      if (raw.source_url && isKnownParkingUrl(raw.source_url)) {
+        log.log("Skipping parked domain", { source_url: raw.source_url, company: raw.company_name_raw });
+        totalSkipped++;
         continue;
       }
       try {

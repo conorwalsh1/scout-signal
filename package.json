@@ -23,6 +23,7 @@
     "db:fix-funding-names": "tsx scripts/fix-funding-company-names.ts",
     "db:seed-sources": "tsx scripts/seed-monitored-sources.ts",
     "db:discover-sources": "tsx scripts/discover-monitored-sources.ts",
+    "db:clean-parked": "tsx scripts/clean-parked-domains.ts",
     "linkedin:weekly-draft": "tsx scripts/linkedin-weekly-top25.ts"
   },
   "dependencies": {

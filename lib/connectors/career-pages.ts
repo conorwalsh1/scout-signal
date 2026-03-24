@@ -2,6 +2,7 @@ import type { SourceConnector } from "./types";
 import type { RawIngestionEvent } from "@/types/ingestion";
 import { createServiceClient } from "@/lib/supabase/service";
 import * as cheerio from "cheerio";
+import { isParkedRedirect, isParkedContent, isKnownParkingUrl } from "./parked-domain-filter";
 
 const CAREER_PATHS = ["/careers", "/jobs", "/career", "/job-openings", "/join-us", "/about/careers", "/work-with-us"];
 
@@ -41,6 +42,7 @@ export const careerPagesConnector: SourceConnector = {
           ? `https://${row.company_domain}`
           : null) ?? null;
       if (!baseUrl) continue;
+      if (isKnownParkingUrl(baseUrl)) continue;
 
       let jobCount: number | null = null;
       let usedUrl = baseUrl;
@@ -55,9 +57,16 @@ export const careerPagesConnector: SourceConnector = {
             signal: AbortSignal.timeout(10_000),
           });
           if (!res.ok) continue;
-          foundCareerPage = true;
+
+          const finalUrl = res.url || url;
+          if (isParkedRedirect(finalUrl, url)) continue;
+
           const html = await res.text();
           const $ = cheerio.load(html);
+          const bodyText = $("body").text().replace(/\s+/g, " ").trim();
+          if (isParkedContent(bodyText)) continue;
+
+          foundCareerPage = true;
           const count = extractJobCount($);
           if (count != null) {
             jobCount = count;
