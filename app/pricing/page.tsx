@@ -31,7 +31,7 @@ export default async function PricingPage() {
   return (
     <main className="min-h-screen p-6 md:p-10">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-foreground-heading mb-2">Pricing</h1>
+        <h1 className="text-3xl font-bold text-foreground-heading mb-[20px]">Pricing</h1>
         <div className="mb-8 rounded-xl border border-border bg-card/60 px-4 py-3 text-sm text-secondary">
           {user ? (
             <span>

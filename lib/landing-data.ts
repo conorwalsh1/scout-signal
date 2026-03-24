@@ -15,16 +15,15 @@ export async function getLandingCompaniesCount(): Promise<number> {
   }
 }
 
-/** Count signals generated today (UTC), based on insert time. */
+/** Count signals generated in the last 24 hours, based on insert time. */
 export async function getSignalsTodayCount(): Promise<number> {
   try {
     const supabase = createServiceClient();
-    const today = new Date().toISOString().slice(0, 10);
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const { count } = await supabase
       .from("signals")
       .select("id", { count: "exact", head: true })
-      .gte("created_at", `${today}T00:00:00.000Z`)
-      .lt("created_at", `${today}T23:59:59.999Z`);
+      .gte("created_at", since);
     return count ?? 0;
   } catch {
     return 0;

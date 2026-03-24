@@ -22,7 +22,6 @@ import {
   getSuggestedOutreachTiming,
 } from "@/lib/signal-engine/explanations";
 import { BADGES, getCompanyBadgesForPlan } from "@/lib/badges";
-import { CompanyBadge } from "@/components/company-badge";
 import { formatDaysAgo, getProvenanceInfo, rankProvenanceSourceTypes } from "@/lib/provenance";
 import type { ScoreComponents } from "@/types/database";
 import { normalizePlan } from "@/lib/plan-gating";
@@ -31,19 +30,7 @@ import { ProPreviewBlock } from "@/components/pro-preview";
 import { getCompanyRelationshipContacts } from "./relationship-actions";
 import { RelationshipAssist } from "./relationship-assist";
 
-function scoreCategory(score: number): "LOW" | "MEDIUM" | "HIGH" {
-  const outOf10 = score / 10;
-  if (outOf10 >= 8) return "HIGH";
-  if (outOf10 >= 5) return "MEDIUM";
-  return "LOW";
-}
-
-function scoreCategoryColor(score: number): string {
-  const outOf10 = score / 10;
-  if (outOf10 >= 8) return "text-signal-green";
-  if (outOf10 >= 5) return "text-data-blue";
-  return "text-secondary";
-}
+/* Score display logic moved to CompanyPageHeader */
 
 export default async function CompanyDetailPage({
   params,
@@ -77,8 +64,7 @@ export default async function CompanyDetailPage({
   const scoreBreakdown = getScoreBreakdown(comp, company.score);
   const companyBadgeIds = getCompanyBadgesForPlan(comp, { score: company.score, plan });
   const outreachTiming = getSuggestedOutreachTiming({ scoreComponents: comp, signals, events });
-  const scoreOutOf10 = (company.score / 10).toFixed(1);
-  const category = scoreCategory(company.score);
+  /* score display moved to CompanyPageHeader */
   const ft1000Source = company.company_sources?.find((s) => s.source_type === "ft1000");
   const ftMeta = (ft1000Source?.metadata_json ?? {}) as Record<string, unknown>;
   const ftRank = typeof ftMeta.rank === "number" ? ftMeta.rank : null;
@@ -291,29 +277,17 @@ export default async function CompanyDetailPage({
         }}
         isSaved={saved}
         isAdmin={isAdmin}
+        signalStory={signalStory}
+        insightLine={whyThisMatters}
+        badgeIds={companyBadgeIds}
+        evidenceLabel={
+          directSources.length > 0
+            ? `Direct: ${directSources.slice(0, 2).join(", ")}`
+            : inferredSources.length > 0
+              ? `Inferred: ${inferredSources.slice(0, 2).join(", ")}`
+              : undefined
+        }
       />
-
-      {/* Signal story – one-line analyst-style briefing */}
-      <div className="rounded-md border border-border bg-card/80 px-4 py-2 text-sm text-secondary">
-        <div className="flex flex-col gap-1">
-          <div className="text-secondary">
-            <span className="font-medium text-foreground">{signalStory}</span>
-          </div>
-          <div className="text-[11px] text-secondary">
-            {directSources.length > 0 ? (
-              <span>
-                Direct evidence: <span className="text-foreground">{directSources.join(", ")}</span>
-              </span>
-            ) : inferredSources.length > 0 ? (
-              <span>
-                Evidence (inferred): <span className="text-foreground">{inferredSources.join(", ")}</span>
-              </span>
-            ) : (
-              <span>Evidence: —</span>
-            )}
-          </div>
-        </div>
-      </div>
 
       {/* Primary row – narrative + facts side-by-side */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
@@ -360,13 +334,6 @@ export default async function CompanyDetailPage({
                   <p className="mt-1 text-sm text-foreground">{outreachAngle}</p>
                 </div>
               </ProPreviewBlock>
-            )}
-            {companyBadgeIds.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {companyBadgeIds.slice(0, 4).map((bid) => (
-                  <CompanyBadge key={bid} badgeId={bid} />
-                ))}
-              </div>
             )}
             {lines.length > 0 && !(lines.length === 1 && lines[0] === "No recent signals") && (
               <>
@@ -549,23 +516,8 @@ export default async function CompanyDetailPage({
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
         <div className="md:col-span-12">
-          <DashboardCard
-            title="Signal Score"
-            className={
-              category === "HIGH"
-                ? "bg-[rgba(34,197,94,0.14)] border-signal-green/50"
-                : category === "MEDIUM"
-                  ? "bg-[rgba(56,189,248,0.12)] border-data-blue/50"
-                  : ""
-            }
-          >
+          <DashboardCard title="Score breakdown">
             <div className="space-y-3">
-              <p className="text-4xl font-bold font-mono text-foreground-heading">
-                {scoreOutOf10} <span className="text-base font-normal text-secondary">/ 10</span>
-              </p>
-              <p className={`text-sm font-semibold uppercase tracking-wide ${scoreCategoryColor(company.score)}`}>
-                {category} SIGNAL
-              </p>
               {rankContext.rank != null && rankContext.totalRanked > 0 && (
                 <p className="text-xs text-secondary">
                   Rank: <span className="font-mono font-semibold text-foreground-heading">#{rankContext.rank}</span>{" "}
